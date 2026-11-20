@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Search Screen -->
+    <string name="search_placeholder">Search characters…</string>
+    <string name="search_content_description">Search characters</string>
+    <string name="search_clear_description">Clear search</string>
+    <string name="search_initial_title">Search for Rick and Morty characters</string>
+    <string name="search_initial_subtitle">Type a name in the search bar above to begin exploring dimensions</string>
+    <string name="search_empty_title">No characters found</string>
+    <string name="search_empty_subtitle">We couldn\'t find any character matching \"%1$s\". Try another name or dimension!</string>
+    <string name="search_error_title">Wubba Lubba Dub Dub!</string>
+    <string name="search_error_fallback">Something went wrong while fetching characters.</string>
+    <string name="action_retry">Retry</string>
+    <string name="character_avatar_content_description">Avatar of %1$s</string>
+    <string name="character_last_known_location">Last known location: %1$s</string>
+    <string name="character_status_dot_description">Status indicator</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_title">Character Detail: %1$d</string>
+    <string name="detail_loading">Loading…</string>
+    <string name="action_back">Back to Search</string>
+</resources>

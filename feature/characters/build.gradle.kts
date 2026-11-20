@@ -11,21 +11,21 @@ android {
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            isMinifyEnabled = false
         }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+    }
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
     }
     buildFeatures {
         compose = true
@@ -47,6 +47,9 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
 
+    // Image loading
+    implementation(libs.coil.compose)
+
     // Jetpack Compose
     implementation(platform(libs.compose.bom))
     implementation(libs.bundles.compose)
@@ -59,5 +62,5 @@ dependencies {
     implementation(libs.lifecycle.viewmodel)
 
     // Testing
-    testImplementation(libs.junit)
+    testImplementation(libs.bundles.unit.test)
 }

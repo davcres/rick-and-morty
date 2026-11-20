@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.TextUnit
 @Composable
 fun Text(
     text: String,
-    color: Color,
-    fontSize: TextUnit,
     modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
     fontStyle: FontStyle? = null,
     fontWeight: FontWeight? = null,
     letterSpacing: TextUnit = TextUnit.Unspecified,
@@ -46,14 +46,14 @@ fun Text(
     }
 
     BasicText(
-        text,
-        modifier
+        text = text,
+        modifier = modifier
             .semantics {
                 contentDescription?.let {
                     this.contentDescription = it
                 }
             },
-        style.merge(
+        style = style.merge(
             color = textColor,
             fontSize = fontSize,
             fontWeight = fontWeight,
@@ -62,11 +62,11 @@ fun Text(
             fontStyle = fontStyle,
             letterSpacing = letterSpacing
         ),
-        onTextLayout,
-        overflow,
-        softWrap,
-        maxLines,
-        minLines
+        onTextLayout = onTextLayout,
+        overflow = overflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        minLines = minLines
     )
 }
 
@@ -74,8 +74,8 @@ fun Text(
 fun Text(
     text: AnnotatedString,
     modifier: Modifier = Modifier,
-    color: Color,
-    fontSize: TextUnit,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
     fontStyle: FontStyle? = null,
     fontWeight: FontWeight? = null,
     letterSpacing: TextUnit = TextUnit.Unspecified,

@@ -37,6 +37,15 @@ object Color {
 }
 
 /**
+ * Colores representativos para el estado de los personajes (Alive, Dead, unknown).
+ */
+object StatusColors {
+    val Alive = Color(0xFF55CC44)
+    val Dead = Color(0xFFD63D2E)
+    val Unknown = Color(0xFF9E9E9E)
+}
+
+/**
  * Colores base de marca pensados para negocios tipo cafetería.
  */
 object BrandColors {
