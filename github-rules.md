@@ -1,6 +1,6 @@
 # GitHub & Git Guidelines for Senior Android Engineers
 
-This document defines the Git and GitHub workflow standards for the **OneWallet** project. Every agent and developer must strictly adhere to these rules when managing branches, commits, quality gates, and Pull Requests.
+This document defines the Git and GitHub workflow standards for the **Rick and Morty** project. Every agent and developer must strictly adhere to these rules when managing branches, commits, quality gates, and Pull Requests.
 
 ---
 

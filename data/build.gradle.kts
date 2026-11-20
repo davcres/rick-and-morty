@@ -39,7 +39,7 @@ dependencies {
 
     implementation(libs.coroutines.core)
     implementation(libs.koin.core)
-    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.bundles.retrofit)
 
     testImplementation(libs.junit)
 }

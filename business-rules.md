@@ -17,7 +17,7 @@ Build a simple, robust Android application that consumes the public **Rick and M
 ## 2. Functional Requirements
 
 ### 2.1 Search Screen
-- **Initial View:** The app must present an initial screen containing a search text field to query characters/items against the Rick and Morty API.
+- **Initial View:** The app must present an initial screen containing a search text field to query characters/items against the Rick and Morty API (https://rickandmortyapi.com/documentation).
 - **Results Presentation:** Query results must be displayed cleanly in a list/grid format with relevant item summaries (e.g., character avatar image, name, status, species).
 - **Empty / Loading / Error States:** The UI must handle and display distinct states: initial empty state, loading indicator during active network/cache retrieval, empty results message if no matches exist, and error feedback when network failures occur.
 
