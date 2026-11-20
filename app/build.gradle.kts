@@ -58,21 +58,22 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
-    }
     buildFeatures {
         compose = true
         buildConfig = true
     }
 }
 
+kotlin {
+    jvmToolchain(21)
+}
+
 dependencies {
-    implementation(projects.core.di)
-    implementation(projects.core.ui)
-    implementation(projects.core.common)
-    implementation(projects.appRoot.presentation.ui)
-    implementation(projects.appRoot.presentation.viewmodels)
+    implementation(projects.di)
+    implementation(projects.core)
+    implementation(projects.domain)
+    implementation(projects.data)
+    implementation(projects.feature.characters)
 
     // Koin
     implementation(libs.koin.android)
