@@ -17,4 +17,3 @@ fun SearchLoadingView(modifier: Modifier = Modifier) {
         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
     }
 }
-

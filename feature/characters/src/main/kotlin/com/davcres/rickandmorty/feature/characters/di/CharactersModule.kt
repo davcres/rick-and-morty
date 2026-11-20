@@ -12,6 +12,7 @@ val charactersFeatureModule = module {
         DetailViewModel(
             characterId = params.get(),
             getCharacterDetailUseCase = get(),
+            dispatcherProvider = get(),
         )
     }
 }

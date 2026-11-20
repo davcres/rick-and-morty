@@ -62,4 +62,3 @@ fun SearchInitialView(modifier: Modifier = Modifier) {
         }
     }
 }
-
