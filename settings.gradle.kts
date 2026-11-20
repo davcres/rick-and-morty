@@ -19,7 +19,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Template"
+rootProject.name = "RickAndMorty"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(":detekt-architecture-rules")

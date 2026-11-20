@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.davcres.template.di"
+    namespace = "com.davcres.rickandmorty.di"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

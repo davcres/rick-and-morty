@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.davcres.template"
+    namespace = "com.davcres.rickandmorty"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.davcres.template"
+        applicationId = "com.davcres.rickandmorty"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -40,14 +40,14 @@ android {
             dimension = "env"
             applicationIdSuffix = ".pre"
             versionNameSuffix = "-pre"
-            resValue("string", "app_name", "TemplateApp (Pre)")
+            resValue("string", "app_name", "Rick & Morty (Pre)")
 
             buildConfigField("String", "API_BASE_URL", "\"https://api-pre.example.com\"")
             buildConfigField("Boolean", "IS_PRO", "false")
         }
         create("pro") {
             dimension = "env"
-            resValue("string", "app_name", "TemplateApp")
+            resValue("string", "app_name", "Rick & Morty")
 
             buildConfigField("String", "API_BASE_URL", "\"https://api.example.com\"")
             buildConfigField("Boolean", "IS_PRO", "true")

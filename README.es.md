@@ -1,122 +1,132 @@
-# Meet - Android Multi-Module Template
+# Rick and Morty - Prueba Técnica Android
 
 🌐 Idiomas:
 - 🇬🇧 [English](README.md)
 - 🇪🇸 Español (actual)
 
 > [!NOTE]
-> Se requiere **JDK 21** para compilar este proyecto.
+> Se requiere **JDK 21** para compilar y ejecutar este proyecto.
 
-Este proyecto es una **plantilla base (template)** para aplicaciones Android moderna, diseñada con un enfoque en la escalabilidad, mantenibilidad y modularización. Utiliza una arquitectura **multi-módulo** robusta siguiendo los principios de **Clean Architecture**, permitiendo una separación clara de responsabilidades y facilitando el trabajo en equipo o el crecimiento del proyecto.
-
-El objetivo de esta plantilla es proporcionar una estructura preconfigurada con las mejores prácticas de la industria, incluyendo inyección de dependencias, navegación moderna y estrictos controles de calidad de código.
-
-> [!IMPORTANT]
-> **Prueba de Concepto:** Este proyecto es una PoC que explora la **modularización extrema**. Cada capa individual (datasource, repository, usecases, etc.) está aislada en su propio módulo de Gradle para asegurar una pureza arquitectónica absoluta y un aislamiento total.
-> **Compromiso (Trade-off):** Este enfoque conlleva un alto "overhead" de configuración en Gradle y tiempos de sincronización significativamente más largos. Está diseñado con fines educativos o para proyectos de gran escala donde el cumplimiento estricto de los límites entre capas es prioritario frente a la velocidad de compilación.
+Aplicación Android desarrollada como prueba técnica consumiendo la [API pública de Rick and Morty](https://rickandmortyapi.com/). Demuestra estándares de ingeniería de software para producción: **Clean Architecture**, arquitectura **multi-módulo Feature-by-Layer**, principios **SOLID**, patrón **MVI (Model-View-Intent)** con **Jetpack Compose**, cancelación reactiva de corrutinas, caché en memoria basada en consultas con TTL y reglas estáticas de arquitectura personalizadas.
 
 ---
 
-# Arquitectura
-### Diagrama Simplificado de Módulos y Relaciones
+## 🛠️ Stack Tecnológico y Librerías
 
-> [!NOTE]
-> Para mayor claridad, este diagrama ha sido simplificado: se ha eliminado la funcionalidad de **auth** y no se muestran las dependencias directas de **:core:di** y **:core:common** con el resto de los módulos para reducir la densidad visual.
+- **Lenguaje:** Kotlin 2.1.0, JVM 21, Coroutines & Flow
+- **UI y Presentación:** Jetpack Compose (BOM 2024.11.00), Material 3, Single Activity, Type-Safe Compose Navigation
+- **Arquitectura:** Clean Architecture + Multi-Módulo Feature-by-Layer + MVI (Flujo de datos unidireccional)
+- **Networking:** Retrofit 2.11.0, OkHttp 4.12.0, Kotlinx Serialization (`kotlinx.serialization.json` 1.7.3)
+- **Inyección de Dependencias:** Koin 4.0.0 (inyección basada en constructores con módulos desacoplados)
+- **Análisis Estático y Reglas de Arquitectura:** Detekt 1.23.7 con reglas personalizadas (`:detekt-architecture-rules`)
+- **Testing:** MockK, JUnit 5, Dispatchers de prueba de Kotlinx Coroutines
+
+---
+
+## 🏗️ Arquitectura y Modularización
+
+El proyecto implementa una arquitectura **Multi-Módulo Feature-by-Layer**.
+
+### Evolución Arquitectónica y Decisiones
+Originalmente concebido sobre una base que exploraba una micro-modularización extrema (más de 25 módulos separando datasources, repositorios y usecases en proyectos Gradle individuales), el proyecto fue refactorizado de forma pragmática hacia una estructura Clean Architecture multi-módulo limpia y equilibrada. Esta decisión eliminó el alto sobrecoste de sincronización y compilación de Gradle, manteniendo al 100% el aislamiento estricto entre capas, la testabilidad y el desacoplamiento de responsabilidades.
+
+### Diagrama de Dependencias
 
 ```mermaid
 graph TD
-    subgraph App_Level [Aplicación]
+    subgraph App_Layer [Aplicación y Ensamblado]
         APP[:app]
+        DI[:di]
     end
 
-    subgraph Core_Level [Nivel Core]
-        core_di[:core:di]
-        core_nav[:core:navigation]
-        core_ui[:core:ui]
-        core_vmb[:core:viewmodels]
-        core_com[:core:common]
+    subgraph Feature_Layer [Módulos de Funcionalidad]
+        FEAT_CHAR[:feature:characters]
     end
 
-    subgraph Feature_AppRoot [Funcionalidad: app-root]
-        root_ui[:app-root:presentation:ui]
-        root_vm[:app-root:presentation:viewmodels]
-        root_uc[:app-root:domain:usecases]
-        root_repo[:app-root:domain:repository]
-        root_models[:app-root:domain:models]
-        root_data[:app-root:data:repository]
-        root_ds[:app-root:data:datasource]
+    subgraph Core_Data_Layers [Capas Core y Data]
+        CORE[:core]
+        DATA[:data]
     end
 
-    %% Dependencias de APP
-    APP --> core_di
-    APP --> core_ui
-    APP --> root_ui
-    APP --> root_vm
+    subgraph Domain_Layer [Dominio Kotlin Puro]
+        DOMAIN[:domain]
+    end
 
-    %% Flujo de App-Root
-    root_ui --> core_ui
-    root_ui --> core_vmb
-    root_ui --> core_nav
-    root_ui --> root_vm
+    %% Cableado de App y DI
+    APP --> DI
+    APP --> FEAT_CHAR
+    APP --> CORE
+    APP --> DATA
+    APP --> DOMAIN
 
-    root_vm --> core_vmb
-    root_vm --> root_models
-    root_vm --> root_uc
+    DI --> FEAT_CHAR
+    DI --> DATA
+    DI --> DOMAIN
+    DI --> CORE
 
-    root_uc --> root_repo
-    root_uc --> root_models
+    %% Dependencias de Feature
+    FEAT_CHAR --> CORE
+    FEAT_CHAR --> DOMAIN
 
-    root_data --> root_models
-    root_data --> root_repo
+    %% Dependencias de Data y Core
+    DATA --> DOMAIN
+    CORE --> DOMAIN
 ```
 
-### Resumen de la Estructura
+### Desglose de Módulos
 
-* **`:app`**: Es el orquestador principal. Depende de todas las funcionalidades (`auth`, `app-root`) y configura la inyección de dependencias global y la navegación.
-* **Funcionalidades (`auth`, `app-root`)**: Cada una está dividida internamente siguiendo Clean Architecture:
-  * **`:presentation`**: Contiene la UI (Compose) y los ViewModels. Depende de `:domain`.
-  * **`:data`**: Implementa los repositorios y fuentes de datos (API, Base de Datos). Depende de :domain.
-  * **`:domain`**: El núcleo de la lógica de negocio (UseCases y Modelos). No tiene dependencias externas de capas superiores.
-* **`:core`**: Contiene el código reutilizable por cualquier módulo (componentes UI comunes, utilidades de navegación, lógica base de ViewModels e inyección de dependencias).
-* **`:detekt-architecture-rules`**: Módulo especializado para asegurar que las reglas de arquitectura se cumplan mediante análisis estático.
+| Módulo | Responsabilidad | Dependencias |
+| :--- | :--- | :--- |
+| **`:domain`** | Lógica de negocio en **Kotlin 100% Puro**: modelos de dominio (`Character`), contratos de repositorios (`CharacterRepository`) y casos de uso aislados (`SearchCharactersUseCase`, `GetCharacterDetailUseCase`). Cero dependencias con Android o frameworks externos. | *Ninguna (0 dependencias)* |
+| **`:data`** | Obtención y persistencia de datos: API REST con Retrofit (`RickAndMortyApi`), fuente remota (`CharacterRemoteDataSource`), mapeo de DTOs y caché en memoria con TTL (`CharacterMemoryCache`). Los DTOs nunca escapan de `:data`. | `:domain` |
+| **`:core`** | Componentes reutilizables de UI (`Button`, `Text`, `ProgressButton`), tema del sistema de diseño (`RickAndMortyTheme`), abstracción de dispatchers (`DispatcherProvider`) y funciones de extensión comunes. | `:domain` |
+| **`:feature:characters`** | Pantallas de búsqueda y detalle de personajes (`SearchScreen`, `DetailScreen`), ViewModels y contratos MVI. Los módulos de funcionalidad nunca dependen entre sí. | `:core`, `:domain` |
+| **`:di`** | Agregador centralizado de módulos de Koin (`appModules`) que reúne `coreModule`, `dataModule`, `domainModule` y `charactersFeatureModule`. | `:core`, `:domain`, `:data`, `:feature:characters` |
+| **`:app`** | Punto de entrada Android (`RickAndMortyApplication`), `MainActivity`, orquestación de navegación (`CharactersNavigation`) y variantes de compilación (`pre`, `pro`). | `:di`, `:core`, `:domain`, `:data`, `:feature:characters` |
+| **`:detekt-architecture-rules`** | Plugin personalizado de Detekt que valida las fronteras arquitectónicas (ej. prohíbe imports de Android en `:domain` o referencias directas de UI a Data). | *Detekt API* |
 
-# Características
-- Proyecto Multi-módulo
-- Clean Architecture
-- Koin
-- Data Store
-- Compose Navigation
-- Detekt
-- Reglas personalizadas de Detekt
-- Hook de Pre-Commit para Detekt
+---
 
-### ¡Atención! 💥
+## 🎯 Decisiones y Patrones Clave
 
-Este proyecto contiene hooks de pre-commit y pre-push para asegurar la calidad del código. Es necesario realizar estos pasos para configurar el control de calidad:
+### 1. MVI (Model-View-Intent) con Efectos Secundarios
+El estado de las pantallas sigue un flujo unidireccional estructurado a través de un `BaseViewModel<State, Intent, Effect>`:
+- **Estado (`UiState`):** Fuente única de verdad inmutable observada en Compose mediante `collectAsStateWithLifecycle()`.
+- **Intención (`UiIntent`):** Eventos de usuario (ej. `QueryChanged`, `CharacterClicked`, `Retry`) procesados por el ViewModel.
+- **Efecto (`UiEffect`):** Eventos de un solo uso (ej. `NavigateToDetail`, `ShowSnackbar`) transmitidos mediante Channels.
 
-1. Cambiar el hooksPath:
+### 2. Cancelación Activa de Corrutinas en Búsqueda
+Al teclear en la búsqueda de personajes, las corrutinas y peticiones previas aún en vuelo se cancelan inmediatamente, evitando condiciones de carrera (*race conditions*) y llamadas de red redundantes.
+
+### 3. Caché en Memoria con TTL (Time-To-Live)
+Los resultados de búsqueda y detalles se almacenan en una caché en memoria (`CharacterMemoryCache`) con un TTL de 5 minutos. Las búsquedas repetidas devuelven la información instantáneamente sin consumir red. El tiempo está desacoplado mediante la interfaz `TimeProvider` para facilitar pruebas unitarias deterministas.
+
+### 4. Manejo Resiliente de Errores de Red
+La API pública de Rick and Morty responde con un HTTP 404 y JSON `{"error": "There is nothing here"}` cuando una búsqueda no encuentra personajes. La implementación `CharacterRemoteDataSourceImpl` gestiona el HTTP 404 de forma limpia devolviendo una lista vacía en lugar de propagar excepciones inesperadas.
+
+---
+
+## 🚦 Controles de Calidad y Verificación
+
+El proyecto sigue estrictos controles de calidad previos a cualquier subida de código:
 
 ```bash
-$ git config core.hooksPath .githooks
+# Ejecutar compilación, pruebas unitarias y análisis estático de arquitectura
+./gradlew detekt assembleDebug testDebugUnitTest
 ```
 
-2. Dar permisos a los hooks:
+### Git Hooks (Opcional)
+Para ejecutar las validaciones automáticamente antes de cada commit:
 
 ```bash
-$ chmod +x .git/hooks/pre-commit .git/hooks/pre-push
+git config core.hooksPath .githooks
+chmod +x .githooks/*
 ```
 
-Para corregir los errores que reporte el hook `pre-commit`, ejecuta esto en la terminal:
+---
 
-```bash
-$ ./gradlew detekt
-```
-
-# Kotzilla
-Kotzilla es un SDK para monitorear y optimizar el rendimiento. Para configurarlo:
-
-1. Localiza el archivo `app/kotzilla.sample.json`.
-2. Crea una copia llamada `app/kotzilla.json` (este archivo está ignorado por Git para proteger tus claves).
-3. Sustituye los valores de ejemplo por las credenciales reales de tu cuenta.
-
-Para más información, asegúrate de tener instalado el plugin de Koin y conectado a tu cuenta.
+## ⚙️ Monitorización de Rendimiento (Kotzilla)
+El proyecto incluye el SDK de Kotzilla para analíticas de Koin y seguimiento de rendimiento:
+1. Localiza `app/kotzilla.sample.json`.
+2. Crea una copia llamada `app/kotzilla.json` (ignorado en Git).
+3. Configura tus claves de API si deseas utilizarlo.
