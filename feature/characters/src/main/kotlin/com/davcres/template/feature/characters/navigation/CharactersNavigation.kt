@@ -38,7 +38,7 @@ fun CharactersNavigation() {
         entryProvider = entryProvider {
             entry<NavDestination.Search> {
                 SearchScreen(
-                    onCharacterClick = { characterId ->
+                    onNavigateToDetail = { characterId ->
                         backStack.add(NavDestination.Detail(characterId))
                     },
                 )
@@ -46,7 +46,7 @@ fun CharactersNavigation() {
             entry<NavDestination.Detail> { key ->
                 DetailScreen(
                     characterId = key.characterId,
-                    onBackClick = {
+                    onNavigateBack = {
                         if (backStack.size > 1) {
                             backStack.removeLastOrNull()
                         }
