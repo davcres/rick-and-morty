@@ -16,7 +16,19 @@
     <string name="character_status_dot_description">Indicador de estado</string>
 
     <!-- Pantalla de Detalle -->
-    <string name="detail_title">Detalle del personaje: %1$d</string>
-    <string name="detail_loading">Cargando…</string>
+    <string name="detail_title">Detalle del personaje</string>
+    <string name="detail_loading">Cargando detalles del personaje…</string>
+    <string name="detail_error_title">¡Wubba Lubba Dub Dub!</string>
+    <string name="detail_error_fallback">No se pudieron cargar los detalles del personaje.</string>
+    <string name="detail_section_info">Información</string>
+    <string name="detail_label_gender">Género</string>
+    <string name="detail_label_species">Especie</string>
+    <string name="detail_label_status">Estado</string>
+    <string name="detail_label_origin">Origen</string>
+    <string name="detail_label_location">Última ubicación conocida</string>
+    <string name="detail_label_type">Tipo</string>
+    <string name="detail_label_episodes">Episodios</string>
+    <string name="detail_episodes_count">%1$d episodio(s)</string>
     <string name="action_back">Volver a la búsqueda</string>
+    <string name="nav_back_content_description">Volver atrás</string>
 </resources>

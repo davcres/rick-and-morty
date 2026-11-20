@@ -10,6 +10,7 @@ data class DetailUiState(
 
 sealed interface DetailUiIntent {
     data object BackClicked : DetailUiIntent
+    data object Retry : DetailUiIntent
     data class LoadCharacter(val characterId: Int) : DetailUiIntent
 }
 

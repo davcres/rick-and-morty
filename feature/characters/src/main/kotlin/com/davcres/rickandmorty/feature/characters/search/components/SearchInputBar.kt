@@ -36,4 +36,3 @@ fun SearchInputBar(
         keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
     )
 }
-
