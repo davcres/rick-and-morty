@@ -7,7 +7,7 @@
 > [!NOTE]
 > **JDK 21** is required to compile and run this project.
 
-An Android application built as a senior-level technical assessment consuming the public [Rick and Morty API](https://rickandmortyapi.com/). It demonstrates production-grade engineering standards: **Clean Architecture**, **Feature-by-Layer Multi-Module structure**, **SOLID principles**, **MVI (Model-View-Intent)** with **Jetpack Compose**, reactive coroutine cancellation, query-based in-memory caching with TTL, and custom static architecture enforcement.
+An Android application built as a technical assessment consuming the public [Rick and Morty API](https://rickandmortyapi.com/). It demonstrates production-grade engineering standards: **Clean Architecture**, **Feature-by-Layer Multi-Module structure**, **SOLID principles**, **MVI (Model-View-Intent)** with **Jetpack Compose**, reactive coroutine cancellation, query-based in-memory caching with TTL, and custom static architecture enforcement.
 
 ---
 

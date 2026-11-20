@@ -7,7 +7,7 @@
 > [!NOTE]
 > Se requiere **JDK 21** para compilar y ejecutar este proyecto.
 
-Aplicación Android desarrollada como prueba técnica de nivel senior consumiendo la [API pública de Rick and Morty](https://rickandmortyapi.com/). Demuestra estándares de ingeniería de software para producción: **Clean Architecture**, arquitectura **multi-módulo Feature-by-Layer**, principios **SOLID**, patrón **MVI (Model-View-Intent)** con **Jetpack Compose**, cancelación reactiva de corrutinas, caché en memoria basada en consultas con TTL y reglas estáticas de arquitectura personalizadas.
+Aplicación Android desarrollada como prueba técnica consumiendo la [API pública de Rick and Morty](https://rickandmortyapi.com/). Demuestra estándares de ingeniería de software para producción: **Clean Architecture**, arquitectura **multi-módulo Feature-by-Layer**, principios **SOLID**, patrón **MVI (Model-View-Intent)** con **Jetpack Compose**, cancelación reactiva de corrutinas, caché en memoria basada en consultas con TTL y reglas estáticas de arquitectura personalizadas.
 
 ---
 
