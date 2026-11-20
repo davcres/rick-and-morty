@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.davcres.template.feature.characters"
+    namespace = "com.davcres.rickandmorty.feature.characters"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

@@ -45,7 +45,7 @@ The project follows a modern **Feature-by-Layer Multi-Module Architecture** to m
 *   **Responsibility:** Design system composables, app theme, shared UI models, base composables, and pure UI helper utilities.
 *   **Dependencies:** `:domain`.
 *   **Components:**
-    *   **Design System:** `TemplateTheme`, color tokens, typography, shapes.
+    *   **Design System:** `RickAndMortyTheme`, color tokens, typography, shapes.
     *   **Reusable Composables:** Button, Text, ProgressButton, AsyncImage, etc.
     *   **UI Models:** Immutable UI view models and UI extension mappers.
     *   **Utilities:** `DispatcherProvider`, extension functions (`Int.empty()`, `String.empty()`, etc.).
@@ -74,7 +74,7 @@ The project follows a modern **Feature-by-Layer Multi-Module Architecture** to m
 *   **Dependencies:** `:data`, `:domain`, `:core`, and all `:feature:*` modules.
 
 ### 📱 Application Module (`:app`)
-*   **Responsibility:** Application entry point (`TemplateApplication`), `MainActivity`, Navigation Graph (`CharactersNavigation`, `NavDestination`), and app-level ViewModels (`MainViewModel`).
+*   **Responsibility:** Application entry point (`RickAndMortyApplication`), `MainActivity`, Navigation Graph (`CharactersNavigation`, `NavDestination`), and app-level ViewModels (`MainViewModel`).
 *   **Dependencies:** `:di`, `:core`, `:domain`, `:data`, and all `:feature:*` modules.
 
 ---
@@ -136,7 +136,7 @@ sealed interface Result<out T> {
 *   Follow Material 3 Design guidelines.
 *   In the View (Compose), always use `collectAsStateWithLifecycle()` to observe State and avoid memory leaks.
 *   Each Composable Panel must have a 'Content' version containing only the State and Events (lambdas), to facilitate the creation of Previews without the need to mock the ViewModel. The 'Content' composable is called by a 'Root' composable which obtains its ViewModel state.
-*   Always use colors from `com.davcrespo.template.core.ui.theme.TemplateTheme` and follow core design system composables style.
+*   Always use colors from `com.davcres.rickandmorty.core.ui.theme.RickAndMortyTheme` and follow core design system composables style.
 *   In Text composables use `style = MaterialTheme.typography` instead of hardcoded `fontSize`.
 
 ### Testing
@@ -158,7 +158,7 @@ sealed interface Result<out T> {
 
 ```
 RickAndMorty
-├── app               (Application, MainActivity, NavHost, TemplateApplication)
+├── app               (Application, MainActivity, NavHost, RickAndMortyApplication)
 ├── core              (Theme, DesignSystem composables, DispatcherProvider, extensions)
 ├── domain            (100% Pure Kotlin: Use Cases, Repositories, Domain Models)
 ├── data              (Retrofit remote API, Memory Cache with TTL, Repository Impls, dataModule)
