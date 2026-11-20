@@ -1,7 +1,7 @@
 package com.davcres.template
 
 import android.app.Application
-import com.davcres.template.core.di.CoreDiDependencyInjector
+import com.davcres.template.di.appModules
 import io.kotzilla.sdk.analytics.koin.analytics
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -13,7 +13,7 @@ class TemplateApplication : Application() {
 
         startKoin {
             androidContext(this@TemplateApplication)
-            modules(CoreDiDependencyInjector.modules)
+            modules(appModules)
 
             analytics() // kotzilla analytics
         }
