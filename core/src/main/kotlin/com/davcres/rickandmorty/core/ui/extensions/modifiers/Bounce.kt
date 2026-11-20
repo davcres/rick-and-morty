@@ -15,32 +15,42 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import com.davcres.rickandmorty.core.ui.auxiliary.ButtonState
 
+private const val DEFAULT_BOUNCE_SCALE = 0.95f
+
 fun Modifier.bounceClick(
-    scale: Float = 0.95f,
+    scale: Float = DEFAULT_BOUNCE_SCALE,
     onClick: (() -> Unit)? = null,
 ) = composed {
     var buttonState by remember { mutableStateOf(ButtonState.Idle) }
-    val animatedScale by animateFloatAsState(if (buttonState == ButtonState.Pressed) scale else 1f)
+    val animatedScale by animateFloatAsState(
+        targetValue = if (buttonState == ButtonState.Pressed) scale else 1f,
+        label = "bounce-scale",
+    )
 
-    this
-        .graphicsLayer {
-            scaleX = animatedScale
-            scaleY = animatedScale
-        }
-        .clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            onClick = { onClick?.invoke() },
-        )
-        .pointerInput(buttonState) {
-            awaitPointerEventScope {
-                buttonState = if (buttonState == ButtonState.Pressed) {
-                    waitForUpOrCancellation()
-                    ButtonState.Idle
-                } else {
-                    awaitFirstDown(false)
-                    ButtonState.Pressed
-                }
+    val baseModifier = this.graphicsLayer {
+        scaleX = animatedScale
+        scaleY = animatedScale
+    }
+
+    val pointerModifier = baseModifier.pointerInput(buttonState) {
+        awaitPointerEventScope {
+            buttonState = if (buttonState == ButtonState.Pressed) {
+                waitForUpOrCancellation()
+                ButtonState.Idle
+            } else {
+                awaitFirstDown(false)
+                ButtonState.Pressed
             }
         }
+    }
+
+    if (onClick != null) {
+        pointerModifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick,
+        )
+    } else {
+        pointerModifier
+    }
 }

@@ -11,6 +11,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.davcres.rickandmorty.core.ui.TextField
+import com.davcres.rickandmorty.core.ui.extensions.modifiers.bounceClick
 import com.davcres.rickandmorty.feature.characters.R
 
 private val SEARCH_FIELD_CORNER_RADIUS = 16.dp
@@ -26,7 +27,7 @@ fun SearchInputBar(
     TextField(
         value = query,
         onValueChange = onQueryChanged,
-        modifier = modifier,
+        modifier = modifier.bounceClick(),
         placeholder = stringResource(R.string.search_placeholder),
         contentDescription = stringResource(R.string.search_content_description),
         hasClearIcon = true,

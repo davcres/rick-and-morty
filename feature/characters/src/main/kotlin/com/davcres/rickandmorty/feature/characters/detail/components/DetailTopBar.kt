@@ -1,6 +1,5 @@
 package com.davcres.rickandmorty.feature.characters.detail.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,8 +41,7 @@ fun DetailTopBar(
             modifier = Modifier
                 .size(BACK_BUTTON_SIZE)
                 .clip(CircleShape)
-                .bounceClick()
-                .clickable(onClick = onBackClicked),
+                .bounceClick(onClick = onBackClicked),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
