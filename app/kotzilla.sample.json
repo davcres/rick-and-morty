@@ -1,0 +1,11 @@
+{
+  "sdkVersion": "X.Y.Z",
+  "keys": [
+    {
+      "appId": "YOUR_APP_ID",
+      "applicationPackageName": "com.your.package",
+      "keyId": "YOUR_KEY_ID",
+      "apiKey": "YOUR_API_KEY"
+    }
+  ]
+}
