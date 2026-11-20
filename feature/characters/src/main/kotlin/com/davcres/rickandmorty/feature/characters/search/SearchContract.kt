@@ -7,12 +7,16 @@ data class SearchUiState(
     val isLoading: Boolean = false,
     val characters: List<Character> = emptyList(),
     val error: String? = null,
-)
+) {
+    val isInitial: Boolean get() = query.isBlank() && !isLoading && characters.isEmpty() && error == null
+    val isEmpty: Boolean get() = query.isNotBlank() && !isLoading && characters.isEmpty() && error == null
+}
 
 sealed interface SearchUiIntent {
     data class QueryChanged(val query: String) : SearchUiIntent
     data class CharacterClicked(val characterId: Int) : SearchUiIntent
     data object ClearSearch : SearchUiIntent
+    data object Retry : SearchUiIntent
 }
 
 sealed interface SearchUiEffect {

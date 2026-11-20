@@ -138,6 +138,7 @@ sealed interface Result<out T> {
 *   Each Composable Panel must have a 'Content' version containing only the State and Events (lambdas), to facilitate the creation of Previews without the need to mock the ViewModel. The 'Content' composable is called by a 'Root' composable which obtains its ViewModel state.
 *   Always use colors from `com.davcres.rickandmorty.core.ui.theme.RickAndMortyTheme` and follow core design system composables style.
 *   In Text composables use `style = MaterialTheme.typography` instead of hardcoded `fontSize`.
+*   Create string resources (English and Spanish) for all strings used in the app.
 
 ### Testing
 *   **Dependencies:** Use MockK and JUnit5 for unit tests. Use Jetpack Compose Tests with JUnit 4 for UI tests.

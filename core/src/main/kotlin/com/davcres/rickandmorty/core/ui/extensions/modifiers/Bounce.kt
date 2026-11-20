@@ -15,19 +15,22 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import com.davcres.rickandmorty.core.ui.auxiliary.ButtonState
 
-fun Modifier.bounceClick(scale: Float = 0.95f) = composed {
+fun Modifier.bounceClick(
+    scale: Float = 0.95f,
+    onClick: (() -> Unit)? = null,
+) = composed {
     var buttonState by remember { mutableStateOf(ButtonState.Idle) }
-    val scale by animateFloatAsState(if (buttonState == ButtonState.Pressed) scale else 1f)
+    val animatedScale by animateFloatAsState(if (buttonState == ButtonState.Pressed) scale else 1f)
 
     this
         .graphicsLayer {
-            scaleX = scale
-            scaleY = scale
+            scaleX = animatedScale
+            scaleY = animatedScale
         }
         .clickable(
             interactionSource = remember { MutableInteractionSource() },
             indication = null,
-            onClick = { }
+            onClick = { onClick?.invoke() },
         )
         .pointerInput(buttonState) {
             awaitPointerEventScope {

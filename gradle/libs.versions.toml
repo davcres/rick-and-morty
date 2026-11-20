@@ -9,14 +9,17 @@ coroutines = "1.8.1"
 datastore = "1.1.1"
 detekt = "1.23.4"
 junit = "4.13.2"
+junitJupiter = "5.10.2"
 junitVersion = "1.2.1"
 koin = "4.1.0"
 kotlin = "2.2.21"
 kotzilla = "1.2.3"
 lifecycle = "2.9.3"
+mockk = "1.13.10"
 navigation3 = "1.0.0"
 navigation3-viewmodel = "2.10.0"
 serialization = "1.9.0"
+turbine = "1.1.0"
 version-catalog-update = "1.0.0"
 espressoCore = "3.7.0"
 appcompat = "1.7.1"
@@ -24,6 +27,7 @@ material = "1.13.0"
 okhttp = "4.12.0"
 retrofit = "2.11.0"
 kotlinxSerializationJson = "1.7.3"
+coil = "2.7.0"
 
 [libraries]
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" } # Integration of Jetpack Compose with Android Activity (`setContent {}`).
@@ -35,6 +39,13 @@ datastore-preferences-core = { group = "androidx.datastore", name = "datastore-p
 detekt-api = { module = "io.gitlab.arturbosch.detekt:detekt-api", version.ref = "detekt" }          # To apply custom rules.
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" } # Provides a set of formatting rules for Detekt (wrapping ktlint).
 junit = { group = "junit", name = "junit", version.ref = "junit" }                                  # Classic JUnit 4 for JVM unit testing.
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junitJupiter" }
+junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junitJupiter" }
+junit-jupiter-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junitJupiter" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 junit-test = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }          # AndroidX JUnit runner and extensions for instrumented tests.
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }                     # Extensiones Android: androidContext(), integración con lifecycle y DSL de ViewModel (viewModel { … }, viewModelOf(::Vm)), inyección en Activity/Fragment (by viewModel())
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }   # Integración con Jetpack Compose (Android): utilidades como koinViewModel() dentro de Composables, getKoin() en Compose, etc. No trae el DSL de ViewModel por sí solo: normalmente lo combinas con koin-android.
@@ -46,6 +57,7 @@ okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.
 retrofit-core = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-kotlinx-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "retrofit" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycle" } # ViewModel architecture component (lifecycle-aware, survives configuration changes).
 lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" } # Lifecycle + Kotlin coroutines integration (`lifecycleScope`, `repeatOnLifecycle`).
 navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" } # Jetpack Navigation3 for runtime navigation features (NavController, NavHost).
@@ -78,6 +90,13 @@ retrofit = [
     "okhttp",
     "okhttp-logging",
     "kotlinx-serialization-json",
+]
+
+unit-test = [
+    "junit-jupiter",
+    "mockk",
+    "coroutines-test",
+    "turbine",
 ]
 
 [plugins]

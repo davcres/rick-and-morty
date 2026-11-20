@@ -11,8 +11,12 @@ kotlin {
     jvmToolchain(21)
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 dependencies {
     implementation(libs.coroutines.core)
 
-    testImplementation(libs.junit)
+    testImplementation(libs.bundles.unit.test)
 }
