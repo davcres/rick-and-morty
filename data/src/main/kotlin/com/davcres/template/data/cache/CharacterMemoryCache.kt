@@ -11,6 +11,14 @@ data class CachedCharacters(
     val timestamp: Long,
 )
 
+interface TimeProvider {
+    fun currentTimeMillis(): Long
+}
+
+class DefaultTimeProvider : TimeProvider {
+    override fun currentTimeMillis(): Long = System.currentTimeMillis()
+}
+
 interface CharacterMemoryCache {
     fun get(query: String): List<Character>?
     fun put(query: String, characters: List<Character>)
@@ -18,6 +26,7 @@ interface CharacterMemoryCache {
 }
 
 class CharacterMemoryCacheImpl(
+    private val timeProvider: TimeProvider,
     private val ttlMillis: Long = DEFAULT_CACHE_TTL_MILLIS,
 ) : CharacterMemoryCache {
 
@@ -26,7 +35,7 @@ class CharacterMemoryCacheImpl(
     @Synchronized
     override fun get(query: String): List<Character>? {
         val cached = cache[query.lowercase().trim()] ?: return null
-        val now = System.currentTimeMillis()
+        val now = timeProvider.currentTimeMillis()
         return if (now - cached.timestamp <= ttlMillis) {
             cached.characters
         } else {
@@ -39,7 +48,7 @@ class CharacterMemoryCacheImpl(
     override fun put(query: String, characters: List<Character>) {
         cache[query.lowercase().trim()] = CachedCharacters(
             characters = characters,
-            timestamp = System.currentTimeMillis(),
+            timestamp = timeProvider.currentTimeMillis(),
         )
     }
 

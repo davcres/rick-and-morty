@@ -13,8 +13,6 @@ kotlin {
 
 dependencies {
     implementation(libs.coroutines.core)
-    implementation(libs.koin.core)
 
     testImplementation(libs.junit)
 }
-
