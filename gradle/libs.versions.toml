@@ -21,6 +21,9 @@ version-catalog-update = "1.0.0"
 espressoCore = "3.7.0"
 appcompat = "1.7.1"
 material = "1.13.0"
+okhttp = "4.12.0"
+retrofit = "2.11.0"
+kotlinxSerializationJson = "1.7.3"
 
 [libraries]
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" } # Integration of Jetpack Compose with Android Activity (`setContent {}`).
@@ -38,6 +41,11 @@ koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", versi
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }                           # Núcleo de Koin (100% Kotlin, sin Android). Define módulos (module { single { … } }, factory { … }) y resuelve inyección. Útil en tests o librerías puras.
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "serialization" } # Kotlin serialization library.
 kotzilla-sdk-compose = { group = "io.kotzilla", name = "kotzilla-sdk-compose", version.ref = "kotzilla" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
+retrofit-core = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit-kotlinx-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "retrofit" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycle" } # ViewModel architecture component (lifecycle-aware, survives configuration changes).
 lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" } # Lifecycle + Kotlin coroutines integration (`lifecycleScope`, `repeatOnLifecycle`).
 navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" } # Jetpack Navigation3 for runtime navigation features (NavController, NavHost).
@@ -62,6 +70,14 @@ navigation = [
     "navigation3-runtime",
     "navigation3-ui",
     "navigation3-viewmodel",
+]
+
+retrofit = [
+    "retrofit-core",
+    "retrofit-kotlinx-serialization",
+    "okhttp",
+    "okhttp-logging",
+    "kotlinx-serialization-json",
 ]
 
 [plugins]
