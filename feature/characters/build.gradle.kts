@@ -64,4 +64,7 @@ dependencies {
 
     // Testing
     testImplementation(libs.bundles.unit.test)
+    androidTestImplementation(libs.junit.test)
+    androidTestImplementation(libs.ui.test.junit4)
+    debugImplementation(libs.ui.test.manifest)
 }

@@ -25,7 +25,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.davcres.rickandmorty.core.ui.Button
 import com.davcres.rickandmorty.core.ui.ButtonStyle
 import com.davcres.rickandmorty.core.ui.UiText
@@ -37,6 +36,7 @@ import com.davcres.rickandmorty.feature.characters.detail.components.DetailHeade
 import com.davcres.rickandmorty.feature.characters.detail.components.DetailInfoCard
 import com.davcres.rickandmorty.feature.characters.detail.components.DetailLoadingView
 import com.davcres.rickandmorty.feature.characters.detail.components.DetailTopBar
+import com.davcres.rickandmorty.feature.characters.navigation.LocalAnimatedVisibilityScope
 import com.davcres.rickandmorty.feature.characters.navigation.LocalSharedTransitionScope
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -124,7 +124,7 @@ private fun DetailSuccessContent(
     modifier: Modifier = Modifier,
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
-    val animatedVisibilityScope = runCatching { LocalNavAnimatedContentScope.current }.getOrNull()
+    val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
 
     val cardSharedBoundsModifier = if (sharedTransitionScope != null && animatedVisibilityScope != null) {
         with(sharedTransitionScope) {

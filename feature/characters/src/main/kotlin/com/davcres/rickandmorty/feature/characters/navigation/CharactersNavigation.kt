@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import com.davcres.rickandmorty.core.navigation.NavDestination
 import com.davcres.rickandmorty.feature.characters.detail.DetailScreen
@@ -48,21 +49,29 @@ fun CharactersNavigation() {
                 },
                 entryProvider = entryProvider {
                     entry<NavDestination.Search> {
-                        SearchScreen(
-                            onNavigateToDetail = { characterId ->
-                                backStack.add(NavDestination.Detail(characterId))
-                            },
-                        )
+                        CompositionLocalProvider( // Needed for shared element transitions
+                            LocalAnimatedVisibilityScope provides LocalNavAnimatedContentScope.current,
+                        ) {
+                            SearchScreen(
+                                onNavigateToDetail = { characterId ->
+                                    backStack.add(NavDestination.Detail(characterId))
+                                },
+                            )
+                        }
                     }
                     entry<NavDestination.Detail> { key ->
-                        DetailScreen(
-                            characterId = key.characterId,
-                            onNavigateBack = {
-                                if (backStack.size > 1) {
-                                    backStack.removeLastOrNull()
-                                }
-                            },
-                        )
+                        CompositionLocalProvider(
+                            LocalAnimatedVisibilityScope provides LocalNavAnimatedContentScope.current,
+                        ) {
+                            DetailScreen(
+                                characterId = key.characterId,
+                                onNavigateBack = {
+                                    if (backStack.size > 1) {
+                                        backStack.removeLastOrNull()
+                                    }
+                                },
+                            )
+                        }
                     }
                 },
             )

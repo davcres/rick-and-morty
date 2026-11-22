@@ -32,7 +32,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.davcres.rickandmorty.core.ui.Text
@@ -40,6 +39,7 @@ import com.davcres.rickandmorty.core.ui.extensions.modifiers.bounceClick
 import com.davcres.rickandmorty.core.ui.theme.StatusColors
 import com.davcres.rickandmorty.domain.model.Character
 import com.davcres.rickandmorty.feature.characters.R
+import com.davcres.rickandmorty.feature.characters.navigation.LocalAnimatedVisibilityScope
 import com.davcres.rickandmorty.feature.characters.navigation.LocalSharedTransitionScope
 
 private val AVATAR_SIZE = 180.dp
@@ -62,7 +62,7 @@ fun DetailHeaderView(
     modifier: Modifier = Modifier,
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
-    val animatedVisibilityScope = runCatching { LocalNavAnimatedContentScope.current }.getOrNull()
+    val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
 
     val avatarSharedBoundsModifier = if (sharedTransitionScope != null && animatedVisibilityScope != null) {
         with(sharedTransitionScope) {
