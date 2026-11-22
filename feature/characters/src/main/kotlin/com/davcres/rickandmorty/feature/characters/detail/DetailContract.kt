@@ -1,11 +1,12 @@
 package com.davcres.rickandmorty.feature.characters.detail
 
+import com.davcres.rickandmorty.core.ui.UiText
 import com.davcres.rickandmorty.domain.model.Character
 
 data class DetailUiState(
     val isLoading: Boolean = false,
     val character: Character? = null,
-    val error: String? = null,
+    val error: UiText? = null,
 )
 
 sealed interface DetailUiIntent {

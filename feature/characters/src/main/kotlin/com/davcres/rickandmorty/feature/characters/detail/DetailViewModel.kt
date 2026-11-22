@@ -5,6 +5,8 @@ import com.davcres.rickandmorty.core.common.DispatcherProvider
 import com.davcres.rickandmorty.core.viewmodels.BaseViewModel
 import com.davcres.rickandmorty.domain.model.Result
 import com.davcres.rickandmorty.domain.usecase.GetCharacterDetailUseCase
+import com.davcres.rickandmorty.feature.characters.R
+import com.davcres.rickandmorty.feature.characters.mapper.toUiText
 import kotlinx.coroutines.launch
 
 class DetailViewModel(
@@ -42,7 +44,7 @@ class DetailViewModel(
                     updateState {
                         copy(
                             isLoading = false,
-                            error = result.exception.message ?: "Failed to load character details",
+                            error = result.error.toUiText(R.string.detail_error_fallback),
                         )
                     }
                 }

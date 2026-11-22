@@ -1,9 +1,12 @@
 package com.davcres.rickandmorty.feature.characters.search
 
 import app.cash.turbine.test
+import com.davcres.rickandmorty.core.ui.UiText
+import com.davcres.rickandmorty.domain.model.AppError
 import com.davcres.rickandmorty.domain.model.Character
 import com.davcres.rickandmorty.domain.model.Result
 import com.davcres.rickandmorty.domain.usecase.SearchCharactersUseCase
+import com.davcres.rickandmorty.feature.characters.R
 import com.davcres.rickandmorty.feature.characters.util.FakeDispatcherProvider
 import com.davcres.rickandmorty.feature.characters.util.MainDispatcherExtension
 import io.mockk.coEvery
@@ -135,8 +138,7 @@ class SearchViewModelTest {
 
     @Test
     fun `QueryChanged should update error state when usecase fails`() = runTest(testDispatcher) {
-        val errorMessage = "Network error"
-        coEvery { searchCharactersUseCase("Rick") } returns Result.Error(RuntimeException(errorMessage))
+        coEvery { searchCharactersUseCase("Rick") } returns Result.Error(AppError.Network)
 
         viewModel.handleIntent(SearchUiIntent.QueryChanged("Rick"))
         advanceTimeBy(310)
@@ -146,7 +148,7 @@ class SearchViewModelTest {
         assertEquals("Rick", state.query)
         assertFalse(state.isLoading)
         assertTrue(state.characters.isEmpty())
-        assertEquals(errorMessage, state.error)
+        assertEquals(UiText.StringResource(R.string.error_network_message), state.error)
         coVerify(exactly = 1) { searchCharactersUseCase("Rick") }
     }
 

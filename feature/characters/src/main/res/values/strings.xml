@@ -10,6 +10,8 @@
     <string name="search_empty_subtitle">We couldn\'t find any character matching \"%1$s\". Try another name or dimension!</string>
     <string name="search_error_title">Wubba Lubba Dub Dub!</string>
     <string name="search_error_fallback">Something went wrong while fetching characters.</string>
+    <string name="error_timeout_message">Damn it, Morty! The portal gun lost signal across dimensions. The server took too long to answer!</string>
+    <string name="error_network_message">Looks like the interdimensional cable is unplugged. Check your connection!</string>
     <string name="action_retry">Retry</string>
     <string name="character_avatar_content_description">Avatar of %1$s</string>
     <string name="character_last_known_location">Last known location: %1$s</string>

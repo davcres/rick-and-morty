@@ -1,9 +1,12 @@
 package com.davcres.rickandmorty.feature.characters.detail
 
 import app.cash.turbine.test
+import com.davcres.rickandmorty.core.ui.UiText
+import com.davcres.rickandmorty.domain.model.AppError
 import com.davcres.rickandmorty.domain.model.Character
 import com.davcres.rickandmorty.domain.model.Result
 import com.davcres.rickandmorty.domain.usecase.GetCharacterDetailUseCase
+import com.davcres.rickandmorty.feature.characters.R
 import com.davcres.rickandmorty.feature.characters.util.FakeDispatcherProvider
 import com.davcres.rickandmorty.feature.characters.util.MainDispatcherExtension
 import io.mockk.coEvery
@@ -73,8 +76,7 @@ class DetailViewModelTest {
 
     @Test
     fun `init handles error when use case fails`() = runTest(testDispatcher) {
-        val errorMessage = "Character not found"
-        coEvery { getCharacterDetailUseCase(1) } returns Result.Error(Exception(errorMessage))
+        coEvery { getCharacterDetailUseCase(1) } returns Result.Error(AppError.NotFound)
 
         val viewModel = createViewModel(characterId = 1)
         advanceUntilIdle()
@@ -82,19 +84,19 @@ class DetailViewModelTest {
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertNull(state.character)
-        assertEquals(errorMessage, state.error)
+        assertEquals(UiText.StringResource(R.string.detail_error_fallback), state.error)
         coVerify(exactly = 1) { getCharacterDetailUseCase(1) }
     }
 
     @Test
     fun `Retry intent triggers reloading character detail`() = runTest(testDispatcher) {
         coEvery { getCharacterDetailUseCase(1) } returns
-            Result.Error(Exception("Network error")) andThen
+            Result.Error(AppError.Network) andThen
             Result.Success(sampleCharacter)
 
         val viewModel = createViewModel(characterId = 1)
         advanceUntilIdle()
-        assertEquals("Network error", viewModel.uiState.value.error)
+        assertEquals(UiText.StringResource(R.string.error_network_message), viewModel.uiState.value.error)
 
         viewModel.handleIntent(DetailUiIntent.Retry)
         advanceUntilIdle()

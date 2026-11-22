@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.davcres.rickandmorty.core.ui.Button
 import com.davcres.rickandmorty.core.ui.Text
+import com.davcres.rickandmorty.core.ui.UiText
 import com.davcres.rickandmorty.core.ui.auxiliary.ButtonStyle
 import com.davcres.rickandmorty.core.ui.theme.Color.Common.white
 import com.davcres.rickandmorty.feature.characters.R
@@ -36,7 +37,7 @@ private val BUTTON_PADDING_VERTICAL = 10.dp
 
 @Composable
 fun SearchErrorView(
-    error: String,
+    error: UiText,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -66,7 +67,7 @@ fun SearchErrorView(
             )
             Spacer(modifier = Modifier.height(SPACING_SMALL))
             Text(
-                text = error.ifBlank { stringResource(R.string.search_error_fallback) },
+                text = error.asString(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

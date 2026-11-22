@@ -1,5 +1,6 @@
 package com.davcres.rickandmorty.data.di
 
+import com.davcres.rickandmorty.data.BuildConfig
 import com.davcres.rickandmorty.data.cache.CharacterMemoryCache
 import com.davcres.rickandmorty.data.cache.CharacterMemoryCacheImpl
 import com.davcres.rickandmorty.data.cache.DefaultTimeProvider
@@ -16,8 +17,10 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import java.util.concurrent.TimeUnit
 
 private const val BASE_URL = "https://rickandmortyapi.com/api/"
+private const val TIMEOUT_SECONDS = 30L
 
 val dataModule = module {
     single {
@@ -30,9 +33,15 @@ val dataModule = module {
 
     single {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
         OkHttpClient.Builder()
+            .callTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
             .addInterceptor(loggingInterceptor)
             .build()
     }
