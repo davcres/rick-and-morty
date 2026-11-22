@@ -13,17 +13,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import com.davcres.rickandmorty.core.ui.auxiliary.ButtonState
 
 private const val DEFAULT_BOUNCE_SCALE = 0.95f
+
+private enum class BounceState {
+    Pressed,
+    Idle,
+}
 
 fun Modifier.bounceClick(
     scale: Float = DEFAULT_BOUNCE_SCALE,
     onClick: (() -> Unit)? = null,
 ) = composed {
-    var buttonState by remember { mutableStateOf(ButtonState.Idle) }
+    var bounceState by remember { mutableStateOf(BounceState.Idle) }
     val animatedScale by animateFloatAsState(
-        targetValue = if (buttonState == ButtonState.Pressed) scale else 1f,
+        targetValue = if (bounceState == BounceState.Pressed) scale else 1f,
         label = "bounce-scale",
     )
 
@@ -32,14 +36,14 @@ fun Modifier.bounceClick(
         scaleY = animatedScale
     }
 
-    val pointerModifier = baseModifier.pointerInput(buttonState) {
+    val pointerModifier = baseModifier.pointerInput(bounceState) {
         awaitPointerEventScope {
-            buttonState = if (buttonState == ButtonState.Pressed) {
+            bounceState = if (bounceState == BounceState.Pressed) {
                 waitForUpOrCancellation()
-                ButtonState.Idle
+                BounceState.Idle
             } else {
                 awaitFirstDown(false)
-                ButtonState.Pressed
+                BounceState.Pressed
             }
         }
     }
