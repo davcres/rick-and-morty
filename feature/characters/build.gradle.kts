@@ -53,6 +53,7 @@ dependencies {
     // Jetpack Compose
     implementation(platform(libs.compose.bom))
     implementation(libs.bundles.compose)
+    debugImplementation(libs.ui.tooling)
 
     // Navigation
     implementation(libs.bundles.navigation)
