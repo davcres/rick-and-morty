@@ -22,9 +22,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.davcres.rickandmorty.core.ui.Button
+import com.davcres.rickandmorty.core.ui.ButtonStyle
 import com.davcres.rickandmorty.core.ui.Text
 import com.davcres.rickandmorty.core.ui.UiText
-import com.davcres.rickandmorty.core.ui.auxiliary.ButtonStyle
 import com.davcres.rickandmorty.feature.characters.R
 
 private val SCREEN_PADDING = 16.dp

@@ -38,7 +38,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.davcres.rickandmorty.core.ui.auxiliary.ButtonStyle
 import com.davcres.rickandmorty.core.ui.extensions.modifiers.bounceClick
 import com.davcres.rickandmorty.core.ui.extensions.modifiers.drawUnderline
 import com.davcres.rickandmorty.core.ui.theme.Color.Button.ButtonPrimary
@@ -168,7 +167,7 @@ object ButtonDefaults {
 }
 
 /**
- * Slot-based Button component adhering to Compose Design System guidelines.
+ * Button component with free content.
  */
 @Composable
 fun Button(
@@ -234,7 +233,7 @@ fun Button(
 }
 
 /**
- * Convenience overload for standard text-and-icon buttons.
+ * Usual button component with text and optional icons.
  */
 @Composable
 fun Button(

@@ -1,4 +1,4 @@
-package com.davcres.rickandmorty.core.ui.auxiliary
+package com.davcres.rickandmorty.core.ui
 
 enum class ButtonStyle {
     PRIMARY,

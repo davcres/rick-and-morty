@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.davcres.rickandmorty.core.ui.Button
+import com.davcres.rickandmorty.core.ui.ButtonStyle
 import com.davcres.rickandmorty.core.ui.UiText
-import com.davcres.rickandmorty.core.ui.auxiliary.ButtonStyle
 import com.davcres.rickandmorty.core.ui.theme.RickAndMortyTheme
 import com.davcres.rickandmorty.domain.model.Character
 import com.davcres.rickandmorty.feature.characters.R
