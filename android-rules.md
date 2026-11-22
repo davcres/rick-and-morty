@@ -48,9 +48,9 @@ The project follows a modern **Feature-by-Layer Multi-Module Architecture** to m
 *   **Dependencies:** `:domain`.
 *   **Components:**
     *   **Design System:** `RickAndMortyTheme`, color tokens, typography, shapes.
-    *   **Reusable Composables:** Button, Text, ProgressButton, AsyncImage, etc.
+    *   **Reusable Composables:** Button, Text, TextField, etc.
     *   **UI Models & Abstractions:** `UiText` (sealed interface for `StringResource` and `DynamicString`), immutable UI view models, and UI extension mappers.
-    *   **Utilities:** `DispatcherProvider`, extension functions (`Int.empty()`, `String.empty()`, etc.).
+    *   **Utilities:** `DispatcherProvider`.
 
 ### 🟡 Data Module (`:data`)
 *   **Responsibility:** Data retrieval, local persistence, remote API networking, and error mapping.
