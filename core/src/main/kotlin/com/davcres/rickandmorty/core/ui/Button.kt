@@ -3,19 +3,15 @@ package com.davcres.rickandmorty.core.ui
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -23,34 +19,25 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTag
-import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.davcres.rickandmorty.core.common.Constants.UI.UITest.ID
-import com.davcres.rickandmorty.core.common.extensions.toCamelCase
 import com.davcres.rickandmorty.core.ui.auxiliary.ButtonStyle
 import com.davcres.rickandmorty.core.ui.extensions.modifiers.bounceClick
 import com.davcres.rickandmorty.core.ui.extensions.modifiers.drawUnderline
@@ -73,285 +60,266 @@ import com.davcres.rickandmorty.core.ui.theme.Color.Button.ButtonToggleSecondary
 import com.davcres.rickandmorty.core.ui.theme.Color.Button.ButtonToggleSecondaryUnselectedDisabled
 import com.davcres.rickandmorty.core.ui.theme.Color.Common.white
 
-@Suppress("CyclomaticComplexMethod")
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-fun Button(
-    text: String? = null,
-    onClick: () -> Unit,
-    buttonStyle: ButtonStyle,
-    fontSize: TextUnit = 16.sp,
-    buttonModifier: Modifier = Modifier,
-    underline: Boolean = false,
-    contentModifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    isSelected: Boolean = false,
-    @DrawableRes leftDrawable: Int? = null,
-    @DrawableRes rightDrawable: Int? = null,
-    leftImageVector: ImageVector? = null,
-    rightImageVector: ImageVector? = null,
-    paddingBetweenIconAndText: Dp = 8.dp,
-    contentDescription: String? = null,
-    label: String? = null,
-    shape: Shape = ButtonDefaults.shape,
-    shadowElevation: Dp? = null,
-    tonalElevation: Dp? = null,
-    iconSize: Dp? = null,
-    tint: Color = Color.Unspecified,
-    tag: String? = null,
-    showSurface: Boolean = true,
-    buttonCustomColor: Color? = null,
-    contentCustomColor: Color? = null,
-    borderCustomColor: BorderStroke? = null,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
+private val BORDER_WIDTH = 1.dp
+private val ICON_SIZE = 18.dp
+private val ICON_SPACING = 8.dp
+private val DEFAULT_SHAPE_CORNER = 12.dp
+private val TERTIARY_SHAPE_CORNER = 4.dp
+private val PADDING_HORIZONTAL = 16.dp
+private val PADDING_VERTICAL = 10.dp
+
+@Immutable
+data class ButtonColors(
+    val containerColor: Color,
+    val contentColor: Color,
+    val disabledContainerColor: Color,
+    val disabledContentColor: Color,
 ) {
-    val (containerColor, contentColor, buttonBorder) = when (buttonStyle) {
-        ButtonStyle.PRIMARY -> {
-            Triple(
-                first = when {
-                    !enabled -> ButtonPrimaryDisabled
-                    else -> ButtonPrimary
-                },
-                second = when {
-                    !enabled -> ButtonPrimaryDisabledText
-                    else -> white
-                },
-                third = null
-            )
-        }
-        ButtonStyle.SECONDARY -> {
-            Triple(
-                first = white,
-                second = when {
-                    !enabled -> ButtonSecondaryDisabled
-                    else -> ButtonSecondary
-                },
-                third = when {
-                    !enabled -> BorderStroke(1.dp, ButtonSecondaryDisabled)
-                    else -> BorderStroke(1.dp, ButtonSecondary)
-                }
-            )
-        }
-        ButtonStyle.TERTIARY -> {
-            Triple(
-                first = Color.Transparent,
-                second = when {
-                    !enabled -> ButtonTertiaryDisabled
-                    else -> ButtonTertiary
-                },
-                third = null
-            )
-        }
-        ButtonStyle.TOGGLE_PRIMARY -> {
-            Triple(
-                first = if (isSelected) {
-                    when {
-                        !enabled -> ButtonTogglePrimarySelectedDisabled
-                        else -> ButtonTogglePrimarySelected
-                    }
-                } else {
-                    white
-                },
-                second = if (isSelected) {
-                    when {
-                        !enabled -> ButtonTogglePrimarySelectedDisabledText
-                        else -> white
-                    }
-                } else {
-                    when {
-                        !enabled -> ButtonTogglePrimaryUnselectedDisabled
-                        else -> ButtonTogglePrimaryUnselected
-                    }
-                },
-                third = if (isSelected) {
-                    null
-                } else {
-                    when {
-                        !enabled -> BorderStroke(1.dp, ButtonTogglePrimaryUnselectedDisabled)
-                        else -> BorderStroke(1.dp, ButtonTogglePrimaryUnselected)
-                    }
-                }
-            )
-        }
-        ButtonStyle.TOGGLE_SECONDARY -> {
-            Triple(
-                first = if (isSelected) {
-                    when {
-                        !enabled -> ButtonToggleSecondarySelectedDisabled
-                        else -> ButtonToggleSecondarySelected
-                    }
-                } else {
-                    white
-                },
-                second = if (isSelected) {
-                    when {
-                        !enabled -> ButtonToggleSecondarySelectedDisabledText
-                        else -> white
-                    }
-                } else {
-                    when {
-                        !enabled -> ButtonToggleSecondaryUnselectedDisabled
-                        else -> ButtonToggleSecondaryUnselected
-                    }
-                },
-                third = if (isSelected) {
-                    null
-                } else {
-                    when {
-                        !enabled -> BorderStroke(1.dp, ButtonToggleSecondaryUnselectedDisabled)
-                        else -> BorderStroke(1.dp, ButtonToggleSecondaryUnselected)
-                    }
-                }
-            )
-        }
+    fun containerColor(enabled: Boolean): Color = if (enabled) containerColor else disabledContainerColor
+
+    fun contentColor(enabled: Boolean): Color = if (enabled) contentColor else disabledContentColor
+}
+
+object ButtonDefaults {
+    val ContentPadding = PaddingValues(horizontal = PADDING_HORIZONTAL, vertical = PADDING_VERTICAL)
+    val IconSpacing: Dp = ICON_SPACING
+    val IconSize: Dp = ICON_SIZE
+    val Shape: Shape = RoundedCornerShape(DEFAULT_SHAPE_CORNER)
+    val TertiaryShape: Shape = RoundedCornerShape(TERTIARY_SHAPE_CORNER)
+
+    fun colors(style: ButtonStyle, isSelected: Boolean = false): ButtonColors = when (style) {
+        ButtonStyle.PRIMARY -> ButtonColors(
+            containerColor = ButtonPrimary,
+            contentColor = white,
+            disabledContainerColor = ButtonPrimaryDisabled,
+            disabledContentColor = ButtonPrimaryDisabledText,
+        )
+        ButtonStyle.SECONDARY -> ButtonColors(
+            containerColor = white,
+            contentColor = ButtonSecondary,
+            disabledContainerColor = white,
+            disabledContentColor = ButtonSecondaryDisabled,
+        )
+        ButtonStyle.TERTIARY -> ButtonColors(
+            containerColor = Color.Transparent,
+            contentColor = ButtonTertiary,
+            disabledContainerColor = Color.Transparent,
+            disabledContentColor = ButtonTertiaryDisabled,
+        )
+        ButtonStyle.TOGGLE_PRIMARY -> resolveTogglePrimaryColors(isSelected)
+        ButtonStyle.TOGGLE_SECONDARY -> resolveToggleSecondaryColors(isSelected)
     }
 
-    val shapeUsed = if (buttonStyle == ButtonStyle.TERTIARY) RoundedCornerShape(4.dp) else shape
+    fun border(
+        style: ButtonStyle,
+        enabled: Boolean,
+        isSelected: Boolean = false,
+    ): BorderStroke? = when (style) {
+        ButtonStyle.SECONDARY -> {
+            val color = if (enabled) ButtonSecondary else ButtonSecondaryDisabled
+            BorderStroke(BORDER_WIDTH, color)
+        }
+        ButtonStyle.TOGGLE_PRIMARY -> if (!isSelected) {
+            val color = if (enabled) ButtonTogglePrimaryUnselected else ButtonTogglePrimaryUnselectedDisabled
+            BorderStroke(BORDER_WIDTH, color)
+        } else {
+            null
+        }
+        ButtonStyle.TOGGLE_SECONDARY -> if (!isSelected) {
+            val color = if (enabled) ButtonToggleSecondaryUnselected else ButtonToggleSecondaryUnselectedDisabled
+            BorderStroke(BORDER_WIDTH, color)
+        } else {
+            null
+        }
+        ButtonStyle.PRIMARY, ButtonStyle.TERTIARY -> null
+    }
 
-    val iconModifier = Modifier
-        .then(Modifier.size(iconSize ?: 16.dp))
+    private fun resolveTogglePrimaryColors(isSelected: Boolean): ButtonColors = if (isSelected) {
+        ButtonColors(
+            containerColor = ButtonTogglePrimarySelected,
+            contentColor = white,
+            disabledContainerColor = ButtonTogglePrimarySelectedDisabled,
+            disabledContentColor = ButtonTogglePrimarySelectedDisabledText,
+        )
+    } else {
+        ButtonColors(
+            containerColor = white,
+            contentColor = ButtonTogglePrimaryUnselected,
+            disabledContainerColor = white,
+            disabledContentColor = ButtonTogglePrimaryUnselectedDisabled,
+        )
+    }
 
-    val content = @Composable {
-        CompositionLocalProvider(LocalContentColor provides (contentCustomColor ?: contentColor)) {
+    private fun resolveToggleSecondaryColors(isSelected: Boolean): ButtonColors = if (isSelected) {
+        ButtonColors(
+            containerColor = ButtonToggleSecondarySelected,
+            contentColor = white,
+            disabledContainerColor = ButtonToggleSecondarySelectedDisabled,
+            disabledContentColor = ButtonToggleSecondarySelectedDisabledText,
+        )
+    } else {
+        ButtonColors(
+            containerColor = white,
+            contentColor = ButtonToggleSecondaryUnselected,
+            disabledContainerColor = white,
+            disabledContentColor = ButtonToggleSecondaryUnselectedDisabled,
+        )
+    }
+}
+
+/**
+ * Slot-based Button component adhering to Compose Design System guidelines.
+ */
+@Composable
+fun Button(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    buttonStyle: ButtonStyle = ButtonStyle.PRIMARY,
+    enabled: Boolean = true,
+    isSelected: Boolean = false,
+    shape: Shape = if (buttonStyle == ButtonStyle.TERTIARY) ButtonDefaults.TertiaryShape else ButtonDefaults.Shape,
+    colors: ButtonColors = ButtonDefaults.colors(buttonStyle, isSelected),
+    border: BorderStroke? = ButtonDefaults.border(buttonStyle, enabled, isSelected),
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    tonalElevation: Dp = 0.dp,
+    shadowElevation: Dp = 0.dp,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val containerColor = colors.containerColor(enabled)
+    val contentColor = colors.contentColor(enabled)
+    val isToggle = buttonStyle == ButtonStyle.TOGGLE_PRIMARY || buttonStyle == ButtonStyle.TOGGLE_SECONDARY
+
+    Surface(
+        onClick = onClick,
+        modifier = modifier
+            .semantics {
+                if (isToggle) {
+                    role = Role.Switch
+                    selected = isSelected
+                }
+            }
+            .bounceClick(),
+        enabled = enabled,
+        shape = shape,
+        color = containerColor,
+        contentColor = contentColor,
+        tonalElevation = tonalElevation,
+        shadowElevation = shadowElevation,
+        border = border,
+        interactionSource = interactionSource,
+    ) {
+        CompositionLocalProvider(LocalContentColor provides contentColor) {
             ProvideTextStyle(MaterialTheme.typography.labelLarge) {
                 Row(
                     modifier = Modifier.padding(contentPadding),
                     horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Row(
-                        modifier = contentModifier,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        when {
-                            leftDrawable != null -> Image(
-                                painter = painterResource(leftDrawable),
-                                contentDescription = contentDescription,
-                                modifier = iconModifier,
-                                colorFilter = if (tint != Color.Unspecified) ColorFilter.tint(tint) else null
-                            )
-                            leftImageVector != null -> Icon(
-                                imageVector = leftImageVector,
-                                contentDescription = contentDescription,
-                                tint = tint,
-                                modifier = iconModifier
-                            )
-                        }
-
-                        if ((leftDrawable != null || leftImageVector != null) && !text.isNullOrEmpty()) {
-                            Spacer(modifier = Modifier.size(paddingBetweenIconAndText))
-                        }
-
-                        if (!text.isNullOrEmpty()) {
-                            Text(
-                                text = text,
-                                fontSize = fontSize,
-                                color = contentCustomColor ?: contentColor,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .then(
-                                        if (underline) Modifier.drawUnderline(
-                                            contentCustomColor ?: contentColor
-                                        ) else Modifier
-                                    )
-                            )
-                        }
-
-                        if ((rightDrawable != null || rightImageVector != null) && !text.isNullOrEmpty()) {
-                            Spacer(modifier = Modifier.size(paddingBetweenIconAndText))
-                        }
-
-                        when {
-                            rightDrawable != null -> Image(
-                                painter = painterResource(rightDrawable),
-                                contentDescription = contentDescription,
-                                modifier = iconModifier,
-                                colorFilter = if (tint != Color.Unspecified) ColorFilter.tint(tint) else null
-                            )
-                            rightImageVector != null -> Icon(
-                                imageVector = rightImageVector,
-                                contentDescription = contentDescription,
-                                tint = tint,
-                                modifier = iconModifier
-                            )
-                        }
+                    if (leadingIcon != null) {
+                        leadingIcon()
+                        Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    }
+                    content()
+                    if (trailingIcon != null) {
+                        Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                        trailingIcon()
                     }
                 }
             }
         }
     }
+}
 
-    val baseModifier = buttonModifier
-        .semantics {
-            role = if (buttonStyle == ButtonStyle.TOGGLE_PRIMARY || buttonStyle == ButtonStyle.TOGGLE_SECONDARY) Role.Switch else Role.Button
-            tag?.let { testTag = "$ID $it".toCamelCase() }
-            testTagsAsResourceId = true
-            contentDescription?.let { this.contentDescription = it }
-            label?.let {
-                onClick(label = it) {
-                    onClick()
-                    true
-                }
-            }
-        }
-        .bounceClick()
+/**
+ * Convenience overload for standard text-and-icon buttons.
+ */
+@Composable
+fun Button(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    buttonStyle: ButtonStyle = ButtonStyle.PRIMARY,
+    enabled: Boolean = true,
+    isSelected: Boolean = false,
+    leftImageVector: ImageVector? = null,
+    rightImageVector: ImageVector? = null,
+    @DrawableRes leftDrawable: Int? = null,
+    @DrawableRes rightDrawable: Int? = null,
+    shape: Shape = if (buttonStyle == ButtonStyle.TERTIARY) ButtonDefaults.TertiaryShape else ButtonDefaults.Shape,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    border: BorderStroke? = null,
+    tint: Color = Color.Unspecified,
+    underline: Boolean = false,
+    contentDescription: String? = null,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    buttonModifier: Modifier = modifier,
+) {
+    val actualModifier = if (buttonModifier != Modifier && modifier == Modifier) buttonModifier else modifier
+    val leading = resolveButtonIcon(leftImageVector, leftDrawable, tint, contentDescription)
+    val trailing = resolveButtonIcon(rightImageVector, rightDrawable, tint, contentDescription)
 
-    if (showSurface) {
-        Surface(
-            onClick = {
-                onClick()
-            },
-            modifier = baseModifier,
-            enabled = enabled,
-            shape = shapeUsed,
-            color = buttonCustomColor ?: containerColor,
-            contentColor = contentCustomColor ?: contentColor,
-            tonalElevation = tonalElevation ?: 0.dp,
-            shadowElevation = shadowElevation ?: 0.dp,
-            border = borderCustomColor ?: buttonBorder,
-            interactionSource = interactionSource
-        ) {
-            content()
-        }
-    } else {
-        Box(
-            modifier = baseModifier
-                .then(
-                    if (shadowElevation != null) {
-                        Modifier.shadow(
-                            shadowElevation,
-                            shapeUsed
-                        )
-                    } else {
-                        Modifier
-                    }
-                )
-                .clip(shapeUsed)
-                .background(buttonCustomColor ?: containerColor, shapeUsed)
-                .border(
-                    borderCustomColor ?: buttonBorder ?: BorderStroke(0.dp, Color.Transparent),
-                    shapeUsed
-                )
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    enabled = enabled
-                ) {
-                    onClick()
-                }
-        ) {
-            content()
+    Button(
+        onClick = onClick,
+        modifier = actualModifier,
+        buttonStyle = buttonStyle,
+        enabled = enabled,
+        isSelected = isSelected,
+        shape = shape,
+        border = border ?: ButtonDefaults.border(buttonStyle, enabled, isSelected),
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
+        leadingIcon = leading,
+        trailingIcon = trailing,
+    ) {
+        val resolvedContentColor = LocalContentColor.current
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = resolvedContentColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = if (underline) Modifier.drawUnderline(resolvedContentColor) else Modifier,
+        )
+    }
+}
+
+@Composable
+private fun resolveButtonIcon(
+    imageVector: ImageVector?,
+    @DrawableRes drawableRes: Int?,
+    tint: Color,
+    contentDescription: String?,
+): (@Composable () -> Unit)? = when {
+    imageVector != null -> {
+        {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(ButtonDefaults.IconSize),
+                tint = if (tint != Color.Unspecified) tint else LocalContentColor.current,
+            )
         }
     }
+    drawableRes != null -> {
+        {
+            Image(
+                painter = painterResource(drawableRes),
+                contentDescription = contentDescription,
+                modifier = Modifier.size(ButtonDefaults.IconSize),
+                colorFilter = if (tint != Color.Unspecified) ColorFilter.tint(tint) else null,
+            )
+        }
+    }
+    else -> null
 }
 
 data class ButtonPreviewParams(
     val buttonStyle: ButtonStyle,
     val showIcon: Boolean,
-    val enabled: Boolean
+    val enabled: Boolean,
 )
 
 class ButtonPreviewParamsProvider : PreviewParameterProvider<ButtonPreviewParams> {
@@ -367,8 +335,8 @@ class ButtonPreviewParamsProvider : PreviewParameterProvider<ButtonPreviewParams
                         ButtonPreviewParams(
                             buttonStyle = buttonStyle,
                             showIcon = showIcon,
-                            enabled = enabled
-                        )
+                            enabled = enabled,
+                        ),
                     )
                 }
             }
@@ -380,15 +348,13 @@ class ButtonPreviewParamsProvider : PreviewParameterProvider<ButtonPreviewParams
 @Preview
 @Composable
 fun ButtonPreview(
-    @PreviewParameter(ButtonPreviewParamsProvider::class) buttonParams: ButtonPreviewParams
+    @PreviewParameter(ButtonPreviewParamsProvider::class) buttonParams: ButtonPreviewParams,
 ) {
     Button(
         text = "Exit",
-        fontSize = 16.sp,
         onClick = {},
         buttonStyle = buttonParams.buttonStyle,
         underline = false,
         enabled = buttonParams.enabled,
-        showSurface = true
     )
 }

@@ -159,7 +159,7 @@ private fun DetailSuccessContent(
             text = stringResource(R.string.action_back),
             onClick = onBack,
             buttonStyle = ButtonStyle.SECONDARY,
-            buttonModifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(
                 horizontal = BUTTON_PADDING_HORIZONTAL,
                 vertical = BUTTON_PADDING_VERTICAL,
