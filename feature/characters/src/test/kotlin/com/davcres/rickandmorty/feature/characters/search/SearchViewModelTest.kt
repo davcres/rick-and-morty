@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.davcres.rickandmorty.core.ui.UiText
 import com.davcres.rickandmorty.domain.model.AppError
 import com.davcres.rickandmorty.domain.model.Character
+import com.davcres.rickandmorty.domain.model.PagedCharacters
 import com.davcres.rickandmorty.domain.model.Result
 import com.davcres.rickandmorty.domain.usecase.SearchCharactersUseCase
 import com.davcres.rickandmorty.feature.characters.R
@@ -38,19 +39,37 @@ class SearchViewModelTest {
     private lateinit var dispatchers: FakeDispatcherProvider
     private lateinit var viewModel: SearchViewModel
 
-    private val sampleCharacters = listOf(
-        Character(
-            id = 1,
-            name = "Rick Sanchez",
-            status = "Alive",
-            species = "Human",
-            type = "",
-            gender = "Male",
-            origin = "Earth",
-            location = "Citadel",
-            imageUrl = "url",
-            episodeCount = 10,
-        )
+    private val sampleCharacter1 = Character(
+        id = 1,
+        name = "Rick Sanchez",
+        status = "Alive",
+        species = "Human",
+        type = "",
+        gender = "Male",
+        origin = "Earth",
+        location = "Citadel",
+        imageUrl = "url",
+        episodeCount = 10,
+    )
+
+    private val sampleCharacter2 = Character(
+        id = 2,
+        name = "Morty Smith",
+        status = "Alive",
+        species = "Human",
+        type = "",
+        gender = "Male",
+        origin = "Earth",
+        location = "Citadel",
+        imageUrl = "url2",
+        episodeCount = 10,
+    )
+
+    private val samplePagedCharacters = PagedCharacters(
+        characters = listOf(sampleCharacter1),
+        page = 1,
+        totalPages = 2,
+        hasNextPage = true,
     )
 
     @BeforeEach
@@ -69,10 +88,14 @@ class SearchViewModelTest {
 
         assertTrue(state.isInitial)
         assertFalse(state.isLoading)
+        assertFalse(state.isLoadingMore)
         assertFalse(state.isEmpty)
         assertEquals("", state.query)
+        assertEquals(1, state.currentPage)
+        assertFalse(state.canPaginate)
         assertTrue(state.characters.isEmpty())
         assertNull(state.error)
+        assertNull(state.paginationError)
     }
 
     @Test
@@ -83,20 +106,22 @@ class SearchViewModelTest {
         val state = viewModel.uiState.value
         assertEquals("   ", state.query)
         assertFalse(state.isLoading)
+        assertFalse(state.isLoadingMore)
         assertTrue(state.characters.isEmpty())
         assertNull(state.error)
-        coVerify(exactly = 0) { searchCharactersUseCase(any()) }
+        assertNull(state.paginationError)
+        coVerify(exactly = 0) { searchCharactersUseCase(any(), any()) }
     }
 
     @Test
     fun `QueryChanged should debounce and update state with characters on success`() = runTest(testDispatcher) {
-        coEvery { searchCharactersUseCase("Rick") } returns Result.Success(sampleCharacters)
+        coEvery { searchCharactersUseCase("Rick", 1) } returns Result.Success(samplePagedCharacters)
 
         viewModel.handleIntent(SearchUiIntent.QueryChanged("Rick"))
 
         // Before debounce delay (300ms)
         advanceTimeBy(150)
-        coVerify(exactly = 0) { searchCharactersUseCase(any()) }
+        coVerify(exactly = 0) { searchCharactersUseCase(any(), any()) }
 
         // After debounce delay
         advanceTimeBy(160)
@@ -105,15 +130,19 @@ class SearchViewModelTest {
         val state = viewModel.uiState.value
         assertEquals("Rick", state.query)
         assertFalse(state.isLoading)
-        assertEquals(sampleCharacters, state.characters)
+        assertFalse(state.isLoadingMore)
+        assertEquals(listOf(sampleCharacter1), state.characters)
+        assertEquals(1, state.currentPage)
+        assertTrue(state.canPaginate)
         assertNull(state.error)
+        assertNull(state.paginationError)
         assertFalse(state.isEmpty)
-        coVerify(exactly = 1) { searchCharactersUseCase("Rick") }
+        coVerify(exactly = 1) { searchCharactersUseCase("Rick", 1) }
     }
 
     @Test
     fun `QueryChanged cancels previous query on rapid typing`() = runTest(testDispatcher) {
-        coEvery { searchCharactersUseCase("Rick") } returns Result.Success(sampleCharacters)
+        coEvery { searchCharactersUseCase("Rick", 1) } returns Result.Success(samplePagedCharacters)
 
         // User rapidly typing "R", "Ri", "Rick"
         viewModel.handleIntent(SearchUiIntent.QueryChanged("R"))
@@ -127,18 +156,18 @@ class SearchViewModelTest {
         advanceUntilIdle()
 
         // Only the final query "Rick" should be executed
-        coVerify(exactly = 0) { searchCharactersUseCase("R") }
-        coVerify(exactly = 0) { searchCharactersUseCase("Ri") }
-        coVerify(exactly = 1) { searchCharactersUseCase("Rick") }
+        coVerify(exactly = 0) { searchCharactersUseCase("R", any()) }
+        coVerify(exactly = 0) { searchCharactersUseCase("Ri", any()) }
+        coVerify(exactly = 1) { searchCharactersUseCase("Rick", 1) }
 
         val state = viewModel.uiState.value
         assertEquals("Rick", state.query)
-        assertEquals(sampleCharacters, state.characters)
+        assertEquals(listOf(sampleCharacter1), state.characters)
     }
 
     @Test
     fun `QueryChanged should update error state when usecase fails`() = runTest(testDispatcher) {
-        coEvery { searchCharactersUseCase("Rick") } returns Result.Error(AppError.Network)
+        coEvery { searchCharactersUseCase("Rick", 1) } returns Result.Error(AppError.Network)
 
         viewModel.handleIntent(SearchUiIntent.QueryChanged("Rick"))
         advanceTimeBy(310)
@@ -149,12 +178,13 @@ class SearchViewModelTest {
         assertFalse(state.isLoading)
         assertTrue(state.characters.isEmpty())
         assertEquals(UiText.StringResource(R.string.error_network_message), state.error)
-        coVerify(exactly = 1) { searchCharactersUseCase("Rick") }
+        coVerify(exactly = 1) { searchCharactersUseCase("Rick", 1) }
     }
 
     @Test
     fun `QueryChanged should show empty state when no characters found`() = runTest(testDispatcher) {
-        coEvery { searchCharactersUseCase("UnknownQuery") } returns Result.Success(emptyList())
+        val emptyPaged = PagedCharacters(characters = emptyList(), page = 1, totalPages = 0, hasNextPage = false)
+        coEvery { searchCharactersUseCase("UnknownQuery", 1) } returns Result.Success(emptyPaged)
 
         viewModel.handleIntent(SearchUiIntent.QueryChanged("UnknownQuery"))
         advanceTimeBy(310)
@@ -169,8 +199,74 @@ class SearchViewModelTest {
     }
 
     @Test
-    fun `Retry should re-execute search without debounce delay`() = runTest(testDispatcher) {
-        coEvery { searchCharactersUseCase("Rick") } returns Result.Success(sampleCharacters)
+    fun `LoadMore should append next page characters and increment currentPage`() = runTest(testDispatcher) {
+        coEvery { searchCharactersUseCase("Rick", 1) } returns Result.Success(samplePagedCharacters)
+        val pageTwo = PagedCharacters(
+            characters = listOf(sampleCharacter2),
+            page = 2,
+            totalPages = 2,
+            hasNextPage = false,
+        )
+        coEvery { searchCharactersUseCase("Rick", 2) } returns Result.Success(pageTwo)
+
+        viewModel.handleIntent(SearchUiIntent.QueryChanged("Rick"))
+        advanceTimeBy(310)
+        advanceUntilIdle()
+
+        viewModel.handleIntent(SearchUiIntent.LoadMore)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(2, state.characters.size)
+        assertEquals(listOf(sampleCharacter1, sampleCharacter2), state.characters)
+        assertEquals(2, state.currentPage)
+        assertFalse(state.canPaginate)
+        assertFalse(state.isLoadingMore)
+        assertNull(state.paginationError)
+        coVerify(exactly = 1) { searchCharactersUseCase("Rick", 2) }
+    }
+
+    @Test
+    fun `LoadMore when canPaginate is false should not trigger useCase`() = runTest(testDispatcher) {
+        val lastPage = PagedCharacters(
+            characters = listOf(sampleCharacter1),
+            page = 1,
+            totalPages = 1,
+            hasNextPage = false,
+        )
+        coEvery { searchCharactersUseCase("Rick", 1) } returns Result.Success(lastPage)
+
+        viewModel.handleIntent(SearchUiIntent.QueryChanged("Rick"))
+        advanceTimeBy(310)
+        advanceUntilIdle()
+
+        viewModel.handleIntent(SearchUiIntent.LoadMore)
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { searchCharactersUseCase("Rick", 2) }
+    }
+
+    @Test
+    fun `LoadMore error should set paginationError without clearing existing characters`() = runTest(testDispatcher) {
+        coEvery { searchCharactersUseCase("Rick", 1) } returns Result.Success(samplePagedCharacters)
+        coEvery { searchCharactersUseCase("Rick", 2) } returns Result.Error(AppError.Network)
+
+        viewModel.handleIntent(SearchUiIntent.QueryChanged("Rick"))
+        advanceTimeBy(310)
+        advanceUntilIdle()
+
+        viewModel.handleIntent(SearchUiIntent.LoadMore)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(sampleCharacter1), state.characters)
+        assertFalse(state.isLoadingMore)
+        assertEquals(UiText.StringResource(R.string.error_network_message), state.paginationError)
+    }
+
+    @Test
+    fun `Retry should re-execute search when characters empty`() = runTest(testDispatcher) {
+        coEvery { searchCharactersUseCase("Rick", 1) } returns Result.Success(samplePagedCharacters)
 
         viewModel.handleIntent(SearchUiIntent.QueryChanged("Rick"))
         advanceTimeBy(310)
@@ -179,14 +275,43 @@ class SearchViewModelTest {
         viewModel.handleIntent(SearchUiIntent.Retry)
         advanceUntilIdle()
 
-        coVerify(exactly = 2) { searchCharactersUseCase("Rick") }
+        coVerify(exactly = 2) { searchCharactersUseCase("Rick", 1) }
         val state = viewModel.uiState.value
-        assertEquals(sampleCharacters, state.characters)
+        assertEquals(listOf(sampleCharacter1), state.characters)
+    }
+
+    @Test
+    fun `Retry when paginationError exists should retry LoadMore`() = runTest(testDispatcher) {
+        coEvery { searchCharactersUseCase("Rick", 1) } returns Result.Success(samplePagedCharacters)
+        coEvery { searchCharactersUseCase("Rick", 2) } returns Result.Error(AppError.Network)
+
+        viewModel.handleIntent(SearchUiIntent.QueryChanged("Rick"))
+        advanceTimeBy(310)
+        advanceUntilIdle()
+
+        viewModel.handleIntent(SearchUiIntent.LoadMore)
+        advanceUntilIdle()
+
+        val pageTwo = PagedCharacters(
+            characters = listOf(sampleCharacter2),
+            page = 2,
+            totalPages = 2,
+            hasNextPage = false,
+        )
+        coEvery { searchCharactersUseCase("Rick", 2) } returns Result.Success(pageTwo)
+
+        viewModel.handleIntent(SearchUiIntent.Retry)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf(sampleCharacter1, sampleCharacter2), state.characters)
+        assertNull(state.paginationError)
+        coVerify(exactly = 2) { searchCharactersUseCase("Rick", 2) }
     }
 
     @Test
     fun `ClearSearch should reset query and characters`() = runTest(testDispatcher) {
-        coEvery { searchCharactersUseCase("Rick") } returns Result.Success(sampleCharacters)
+        coEvery { searchCharactersUseCase("Rick", 1) } returns Result.Success(samplePagedCharacters)
 
         viewModel.handleIntent(SearchUiIntent.QueryChanged("Rick"))
         advanceTimeBy(310)
@@ -198,6 +323,9 @@ class SearchViewModelTest {
         assertEquals("", state.query)
         assertTrue(state.characters.isEmpty())
         assertNull(state.error)
+        assertNull(state.paginationError)
+        assertEquals(1, state.currentPage)
+        assertFalse(state.canPaginate)
         assertTrue(state.isInitial)
     }
 

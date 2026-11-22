@@ -3,11 +3,14 @@ package com.davcres.rickandmorty.data.repository
 import com.davcres.rickandmorty.data.cache.CharacterMemoryCache
 import com.davcres.rickandmorty.data.remote.datasource.CharacterRemoteDataSource
 import com.davcres.rickandmorty.data.remote.model.CharacterDto
+import com.davcres.rickandmorty.data.remote.model.CharacterResponseDto
 import com.davcres.rickandmorty.data.remote.model.LocationDto
 import com.davcres.rickandmorty.data.remote.model.OriginDto
+import com.davcres.rickandmorty.data.remote.model.PageInfoDto
 import com.davcres.rickandmorty.data.util.FakeDispatcherProvider
 import com.davcres.rickandmorty.domain.model.AppError
 import com.davcres.rickandmorty.domain.model.Character
+import com.davcres.rickandmorty.domain.model.PagedCharacters
 import com.davcres.rickandmorty.domain.model.Result
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -16,6 +19,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -54,6 +58,13 @@ class CharacterRepositoryImplTest {
         episodeCount = 1,
     )
 
+    private val samplePagedCharacters = PagedCharacters(
+        characters = listOf(sampleCharacter),
+        page = 1,
+        totalPages = 2,
+        hasNextPage = true,
+    )
+
     @BeforeEach
     fun setUp() {
         remoteDataSource = mockk()
@@ -69,47 +80,74 @@ class CharacterRepositoryImplTest {
     @Test
     fun `searchCharacters should return cached data immediately when cache hit`() = runTest {
         val query = "Rick"
-        val cachedList = listOf(sampleCharacter)
-        every { memoryCache.get(query) } returns cachedList
+        val page = 1
+        every { memoryCache.get(query, page) } returns samplePagedCharacters
 
-        val result = repository.searchCharacters(query)
+        val result = repository.searchCharacters(query, page)
 
         assertTrue(result is Result.Success)
-        assertEquals(cachedList, (result as Result.Success).data)
-        verify(exactly = 1) { memoryCache.get(query) }
-        coVerify(exactly = 0) { remoteDataSource.searchCharacters(any()) }
+        assertEquals(samplePagedCharacters, (result as Result.Success).data)
+        verify(exactly = 1) { memoryCache.get(query, page) }
+        coVerify(exactly = 0) { remoteDataSource.searchCharacters(any(), any()) }
     }
 
     @Test
     fun `searchCharacters should call remote and cache results on cache miss`() = runTest {
         val query = "Rick"
-        every { memoryCache.get(query) } returns null
-        coEvery { remoteDataSource.searchCharacters(query) } returns listOf(sampleCharacterDto)
+        val page = 1
+        val remoteResponse = CharacterResponseDto(
+            info = PageInfoDto(pages = 2, next = "https://rickandmortyapi.com/api/character/?page=2"),
+            results = listOf(sampleCharacterDto),
+        )
+        every { memoryCache.get(query, page) } returns null
+        coEvery { remoteDataSource.searchCharacters(query, page) } returns remoteResponse
 
-        val result = repository.searchCharacters(query)
+        val result = repository.searchCharacters(query, page)
 
         assertTrue(result is Result.Success)
         val data = (result as Result.Success).data
-        assertEquals(1, data.size)
-        assertEquals(sampleCharacter.id, data[0].id)
-        assertEquals(sampleCharacter.name, data[0].name)
-        verify(exactly = 1) { memoryCache.get(query) }
-        coVerify(exactly = 1) { remoteDataSource.searchCharacters(query) }
-        verify(exactly = 1) { memoryCache.put(query, any()) }
+        assertEquals(1, data.characters.size)
+        assertEquals(sampleCharacter.id, data.characters[0].id)
+        assertEquals(sampleCharacter.name, data.characters[0].name)
+        assertEquals(page, data.page)
+        assertEquals(2, data.totalPages)
+        assertTrue(data.hasNextPage)
+        verify(exactly = 1) { memoryCache.get(query, page) }
+        coVerify(exactly = 1) { remoteDataSource.searchCharacters(query, page) }
+        verify(exactly = 1) { memoryCache.put(query, page, any()) }
+    }
+
+    @Test
+    fun `searchCharacters should return hasNextPage false when next is null`() = runTest {
+        val query = "Rick"
+        val page = 2
+        val remoteResponse = CharacterResponseDto(
+            info = PageInfoDto(pages = 2, next = null),
+            results = listOf(sampleCharacterDto),
+        )
+        every { memoryCache.get(query, page) } returns null
+        coEvery { remoteDataSource.searchCharacters(query, page) } returns remoteResponse
+
+        val result = repository.searchCharacters(query, page)
+
+        assertTrue(result is Result.Success)
+        val data = (result as Result.Success).data
+        assertFalse(data.hasNextPage)
     }
 
     @Test
     fun `searchCharacters should return error when remoteDataSource throws exception`() = runTest {
         val query = "Rick"
+        val page = 1
         val exception = SocketTimeoutException("Network timeout")
-        every { memoryCache.get(query) } returns null
-        coEvery { remoteDataSource.searchCharacters(query) } throws exception
+        every { memoryCache.get(query, page) } returns null
+        coEvery { remoteDataSource.searchCharacters(query, page) } throws exception
 
-        val result = repository.searchCharacters(query)
+        val result = repository.searchCharacters(query, page)
 
         assertTrue(result is Result.Error)
         assertEquals(AppError.Timeout, (result as Result.Error).error)
-        verify(exactly = 0) { memoryCache.put(any(), any()) }
+        verify(exactly = 0) { memoryCache.put(any(), any(), any()) }
     }
 
     @Test

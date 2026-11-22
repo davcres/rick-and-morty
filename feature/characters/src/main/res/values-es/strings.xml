@@ -13,6 +13,8 @@
     <string name="error_timeout_message">¡Maldita sea, Morty! La pistola de portales perdió la señal entre dimensiones. El servidor tardó demasiado en responder.</string>
     <string name="error_network_message">Parece que el cable interdimensional está desconectado. ¡Revisa tu conexión!</string>
     <string name="action_retry">Reintentar</string>
+    <string name="pagination_retry">Reintentar cargar más</string>
+    <string name="pagination_error_message">No se pudieron cargar más personajes.</string>
     <string name="character_avatar_content_description">Avatar de %1$s</string>
     <string name="character_last_known_location">Última ubicación conocida: %1$s</string>
     <string name="character_status_dot_description">Indicador de estado</string>

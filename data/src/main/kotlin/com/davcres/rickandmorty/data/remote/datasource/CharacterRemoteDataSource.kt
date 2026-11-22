@@ -2,10 +2,11 @@ package com.davcres.rickandmorty.data.remote.datasource
 
 import com.davcres.rickandmorty.data.remote.api.RickAndMortyApi
 import com.davcres.rickandmorty.data.remote.model.CharacterDto
+import com.davcres.rickandmorty.data.remote.model.CharacterResponseDto
 import retrofit2.HttpException
 
 interface CharacterRemoteDataSource {
-    suspend fun searchCharacters(name: String): List<CharacterDto>
+    suspend fun searchCharacters(name: String, page: Int = 1): CharacterResponseDto
     suspend fun getCharacter(id: Int): CharacterDto
 }
 
@@ -15,12 +16,13 @@ class CharacterRemoteDataSourceImpl(
     private val api: RickAndMortyApi,
 ) : CharacterRemoteDataSource {
 
-    override suspend fun searchCharacters(name: String): List<CharacterDto> =
+    override suspend fun searchCharacters(name: String, page: Int): CharacterResponseDto =
         try {
-            api.searchCharacters(name).results
+            api.searchCharacters(name, page)
         } catch (e: HttpException) {
+            // If a page that does not exist is requested, or if the filter returns no results, the API responds with an HTTP 404.
             if (e.code() == HTTP_NOT_FOUND) {
-                emptyList()
+                CharacterResponseDto(info = null, results = emptyList())
             } else {
                 throw e
             }

@@ -4,6 +4,16 @@ This document defines the Git and GitHub workflow standards for the **Rick and M
 
 ---
 
+> [!CAUTION]
+> ### 🛑 REGLA DE ORO: PROHIBIDO CREAR RAMAS, COMMITS O PUSH SIN ORDEN EXPRESA
+> **NUNCA** crees una rama (`git checkout -b`), **NUNCA** hagas un commit (`git commit`), **NUNCA** hagas un push (`git push`) y **NUNCA** abras una Pull Request (`gh pr create`) de manera proactiva o por iniciativa propia.
+> 
+> * Todo desarrollo, edición de código o refactorización debe permanecer sin commitear en el directorio de trabajo (*working tree*) de la rama actual.
+> * Las acciones de Git (crear rama, commitear, pushear o crear PR) **SOLO se ejecutan cuando el usuario lo pida explícita y expresamente** en su mensaje (ej: *"crea la rama X"*, *"haz commit"*, *"abre el PR"*).
+> * Si el usuario no lo ha ordenado expresamente, el agente debe limitarse a mostrar los cambios, ejecutar las verificaciones locales pertinentes y esperar instrucciones sin tocar el estado de Git.
+
+---
+
 ## 1. Branching Strategy
 
 - **Base Branch:** All feature work, bug fixes, refactoring, and maintenance branches must be cut from and target `develop` as the base branch (`main` is reserved for production releases).
@@ -56,9 +66,11 @@ All three checks must pass with `BUILD SUCCESSFUL` and 0 errors before opening a
 
 ---
 
-## 4. Pull Request Protocol (via GitHub CLI `gh`)
+## 4. Pull Request Protocol (via GitHub CLI `gh`) - SOLO BAJO PETICIÓN EXPRESA
 
-When the user requests to create a Pull Request:
+**IMPORTANTE:** Este protocolo se ejecuta **ÚNICA Y EXCLUSIVAMENTE** cuando el usuario solicita expresamente la creación de la rama, el commit o el Pull Request.
+
+Cuando el usuario lo solicite expresamente:
 
 ### Step 1: Ensure Local Working Branch
 - Verify git status: `git status`
