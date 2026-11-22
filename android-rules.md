@@ -34,31 +34,35 @@ The project follows a modern **Feature-by-Layer Multi-Module Architecture** to m
 ```
 
 ### 🟢 Domain Module (`:domain`)
-*   **Responsibility:** Pure Kotlin business logic, domain models, repository interfaces, and use cases.
+*   **Responsibility:** Pure Kotlin business logic, domain models, domain errors, repository interfaces, and use cases.
 *   **Dependencies:** **None (0 dependencies)**. Must remain 100% Pure Kotlin, free from Android framework and third-party UI libraries.
 *   **Components:**
     *   **Domain Models:** Pure data classes representing business objects (e.g., `Character`, `ThemeMode`).
+    *   **Domain Errors:** Typed sealed hierarchy for business/system errors (`AppError`: `Network`, `Timeout`, `NotFound`, `Server`, `Unknown`).
+    *   **Result Model:** Strongly-typed result wrapper (`Result<out T>`: `Success<T>`, `Error(val error: AppError)`).
     *   **Use Cases (Interactors):** Encapsulate specific business logic (e.g., `SearchCharactersUseCase`, `GetCharacterDetailUseCase`). Each Use Case should have a single public `invoke` function.
     *   **Repository Interfaces:** Abstractions defining data operations (e.g., `CharacterRepository`).
 
 ### 🔵 Core Module (`:core`)
-*   **Responsibility:** Design system composables, app theme, shared UI models, base composables, and pure UI helper utilities.
+*   **Responsibility:** Design system composables, app theme, shared UI models, presentation abstractions, base composables, and pure UI helper utilities.
 *   **Dependencies:** `:domain`.
 *   **Components:**
     *   **Design System:** `RickAndMortyTheme`, color tokens, typography, shapes.
     *   **Reusable Composables:** Button, Text, ProgressButton, AsyncImage, etc.
-    *   **UI Models:** Immutable UI view models and UI extension mappers.
+    *   **UI Models & Abstractions:** `UiText` (sealed interface for `StringResource` and `DynamicString`), immutable UI view models, and UI extension mappers.
     *   **Utilities:** `DispatcherProvider`, extension functions (`Int.empty()`, `String.empty()`, etc.).
 
 ### 🟡 Data Module (`:data`)
-*   **Responsibility:** Data retrieval, local persistence, and remote API networking.
+*   **Responsibility:** Data retrieval, local persistence, remote API networking, and error mapping.
 *   **Dependencies:** `:domain`.
 *   **Components:**
     *   **Repository Implementations:** Implement domain repository interfaces, orchestrating flow between local and remote sources.
     *   **Data Sources:**
         *   *Remote:* Retrofit HTTP client (`RickAndMortyApi`).
         *   *Local:* In-memory cache with TTL (`CharacterMemoryCache`).
-    *   **Mappers:** Functions to transform Data entities/DTOs into Domain models and vice-versa. API DTOs never escape the data layer.
+    *   **Mappers:**
+        *   *Entities/DTOs:* Transform Data entities/DTOs into Domain models and vice-versa. API DTOs never escape the data layer.
+        *   *Errors:* Transform low-level exceptions (`SocketTimeoutException`, `UnknownHostException`, `HttpException`, `IOException`) into typed `AppError` before returning to domain callers.
 
 ### 🟣 Feature Modules (`:feature:*`)
 *   **Responsibility:** Rendering UI, handling user interactions, and managing feature-specific state.
@@ -85,11 +89,11 @@ We use **MVI** for state management to ensure a unidirectional data flow and pre
 
 ### Key Components
 1.  **State:** An **immutable** data class representing the single source of truth for a specific screen/view.
-    *   *Example:* `data class SearchUiState(val query: String, val isLoading: Boolean, val characters: List<Character>, val error: String?)`
+    *   *Example:* `data class SearchUiState(val query: String, val isLoading: Boolean, val characters: List<Character>, val error: UiText?)`
 2.  **Event (Intent):** Represents user actions or system events that trigger logic.
     *   *Example:* `sealed interface SearchUiIntent { data class QueryChanged(val query: String) : SearchUiIntent; data class CharacterClicked(val id: Int) : SearchUiIntent }`
 3.  **Effect (Side Effect):** One-time events that shouldn't persist in the state (e.g., Navigation, Snackbars, Toasts).
-    *   *Example:* `sealed interface SearchUiEffect { data class NavigateToDetail(val characterId: Int) : SearchUiEffect; data class ShowError(val message: String) : SearchUiEffect }`
+    *   *Example:* `sealed interface SearchUiEffect { data class NavigateToDetail(val characterId: Int) : SearchUiEffect; data class ShowError(val message: UiText) : SearchUiEffect }`
 
 ### Flow
 1.  **View** emits an **Event**.
@@ -97,18 +101,56 @@ We use **MVI** for state management to ensure a unidirectional data flow and pre
 3.  **ViewModel** updates the **State** (via `StateFlow`) or emits an **Effect** (via `SharedFlow`/`Channel`).
 4.  **View** observes **State** to render UI and collects **Effects** for navigation/alerts.
 
-### Model
-1. Use a sealed interface for domain/repository execution results where appropriate:
+### Result & Domain Errors
+1. Strongly-typed Result model in `:domain`:
 ```kotlin
 sealed interface Result<out T> {
-    data class Success<T>(val data: T) : Result<T>
-    data class Error(val exception: Throwable) : Result<Nothing>
+    data class Success<out T>(val data: T) : Result<T>
+    data class Error(val error: AppError) : Result<Nothing>
+}
+```
+2. Pure Kotlin typed error hierarchy in `:domain`:
+```kotlin
+sealed interface AppError {
+    data object Network : AppError
+    data object Timeout : AppError
+    data object NotFound : AppError
+    data object Server : AppError
+    data class Unknown(val throwable: Throwable? = null) : AppError
 }
 ```
 
 ---
 
-## 3. SOLID Principles in Context
+## 3. Error Handling Architecture & Clean Error Boundaries
+
+To preserve strict separation of concerns, maintain testability, and avoid "stringly-typed" anti-patterns, error handling must adhere to these standards:
+
+### 🚫 Anti-Patterns to Avoid:
+*   **No "util" / "helpers" catch-all packages:** Logic must live where it belongs (Mappers in `:data`, Domain models in `:domain`, UI Mappers / Components in `:feature`).
+*   **No string parsing of exceptions:** Never inspect raw exception strings (`error.contains("timeout")`, `error.contains("resolve host")`) in ViewModels or UI.
+*   **No leaking technical exceptions to Domain:** Never pass `SocketTimeoutException`, `UnknownHostException`, `HttpException`, or raw `Throwable` into `:domain` or `:feature`.
+
+### 🔄 Multi-Layer Flow:
+1.  **Data Layer (`:data`):**
+    *   Repositories catch technical exceptions (`IOException`, `SocketTimeoutException`, `UnknownHostException`, `HttpException`).
+    *   Use `Throwable.toAppError()` extension in `mapper/ErrorMapper.kt` to map them into domain `AppError`.
+    *   Return `Result.Error(e.toAppError())`.
+2.  **Domain Layer (`:domain`):**
+    *   Operates purely with `Result<T>` and `AppError`. Remains 100% pure Kotlin, oblivious to Retrofit or Android SDK.
+3.  **Presentation Layer (`:core` & `:feature`):**
+    *   `:core` provides `UiText` (`StringResource(resId, args)` and `DynamicString(value)`).
+    *   Feature mappers (e.g., `ErrorUiMapper.kt`) translate `AppError` into `UiText` (using thematic localized string resources).
+    *   `UiState` stores `error: UiText?`.
+    *   Compose views call `error.asString()` to resolve strings in composition with automatic locale/configuration change support.
+
+### 📐 When to use `UiText` vs `String`:
+*   **Use `UiText`:** Messages decided by the ViewModel for UI display (errors in state, Snackbars, dialog texts, dynamic banners).
+*   **Use `String`:** Domain entities (`Character.name`), user input (`query`), raw data from APIs, and fixed UI texts directly loaded in Compose with `stringResource(...)`.
+
+---
+
+## 4. SOLID Principles in Context
 
 *   **S - Single Responsibility Principle:**
     *   *Apply:* Each Use Case does exactly one thing. ViewModels handle state logic, not UI rendering or data fetching.
@@ -123,7 +165,7 @@ sealed interface Result<out T> {
 
 ---
 
-## 4. Best Practices
+## 5. Best Practices
 
 ### Kotlin & Coroutines
 *   Use `suspend` functions for asynchronous operations.
@@ -143,8 +185,8 @@ sealed interface Result<out T> {
 ### Testing
 *   **Dependencies:** Use MockK and JUnit5 for unit tests. Use Jetpack Compose Tests with JUnit 4 for UI tests.
 *   **Domain:** 100% unit test coverage for Use Cases (fast, pure Kotlin).
-*   **Data:** Unit test Repositories and Mappers using MockK.
-*   **Presentation / Features:** Unit test ViewModels (verify State updates and Effects).
+*   **Data:** Unit test Repositories and Mappers (including `ErrorMapper`) using MockK.
+*   **Presentation / Features:** Unit test ViewModels (verify State updates, typed `UiText` errors, and Effects).
 *   Every time a new class is created or modified, ensure existing tests pass and write new tests as needed.
 *   Share the same `TestDispatcher` instance across tests using `MainDispatcherExtension`.
 
@@ -152,18 +194,19 @@ sealed interface Result<out T> {
 *   **Use Cases:** `Verb` + `Noun` + `UseCase` (e.g., `SearchCharactersUseCase`).
 *   **Repositories:** `DataName` + `Repository` (e.g., `CharacterRepository`).
 *   **Implementations:** `Name` + `Impl` (e.g., `CharacterRepositoryImpl`).
+*   **Mappers:** `DataName` + `Mapper` or `ErrorMapper` / `ErrorUiMapper`.
 
 ---
 
-## 5. Project Organization: Multi-Module Layout
+## 6. Project Organization: Multi-Module Layout
 
 ```
 RickAndMorty
 ├── app               (Application, MainActivity, NavHost, RickAndMortyApplication)
-├── core              (Theme, DesignSystem composables, DispatcherProvider, extensions)
-├── domain            (100% Pure Kotlin: Use Cases, Repositories, Domain Models)
-├── data              (Retrofit remote API, Memory Cache with TTL, Repository Impls, dataModule)
+├── core              (Theme, DesignSystem composables, UiText, DispatcherProvider, extensions)
+├── domain            (100% Pure Kotlin: Use Cases, Repositories, Domain Models, AppError, Result)
+├── data              (Retrofit remote API, Memory Cache with TTL, Repository Impls, ErrorMapper, dataModule)
 ├── di                (Central Koin modules aggregator: appModules)
 └── feature           (Independent UI Feature Modules)
-    └── characters    (SearchScreen, DetailScreen, SearchViewModel, DetailViewModel, charactersFeatureModule)
+    └── characters    (SearchScreen, DetailScreen, SearchViewModel, DetailViewModel, ErrorUiMapper, charactersFeatureModule)
 ```
