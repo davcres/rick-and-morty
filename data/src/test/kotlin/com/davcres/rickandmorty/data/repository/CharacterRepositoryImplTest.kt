@@ -6,6 +6,7 @@ import com.davcres.rickandmorty.data.remote.model.CharacterDto
 import com.davcres.rickandmorty.data.remote.model.LocationDto
 import com.davcres.rickandmorty.data.remote.model.OriginDto
 import com.davcres.rickandmorty.data.util.FakeDispatcherProvider
+import com.davcres.rickandmorty.domain.model.AppError
 import com.davcres.rickandmorty.domain.model.Character
 import com.davcres.rickandmorty.domain.model.Result
 import io.mockk.coEvery
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.net.SocketTimeoutException
 
 class CharacterRepositoryImplTest {
 
@@ -99,14 +101,14 @@ class CharacterRepositoryImplTest {
     @Test
     fun `searchCharacters should return error when remoteDataSource throws exception`() = runTest {
         val query = "Rick"
-        val exception = RuntimeException("Network timeout")
+        val exception = SocketTimeoutException("Network timeout")
         every { memoryCache.get(query) } returns null
         coEvery { remoteDataSource.searchCharacters(query) } throws exception
 
         val result = repository.searchCharacters(query)
 
         assertTrue(result is Result.Error)
-        assertEquals(exception, (result as Result.Error).exception)
+        assertEquals(AppError.Timeout, (result as Result.Error).error)
         verify(exactly = 0) { memoryCache.put(any(), any()) }
     }
 
@@ -132,7 +134,7 @@ class CharacterRepositoryImplTest {
         val result = repository.getCharacterDetail(characterId)
 
         assertTrue(result is Result.Error)
-        assertEquals(exception, (result as Result.Error).exception)
+        assertEquals(AppError.Unknown(exception), (result as Result.Error).error)
         coVerify(exactly = 1) { remoteDataSource.getCharacter(characterId) }
     }
 }

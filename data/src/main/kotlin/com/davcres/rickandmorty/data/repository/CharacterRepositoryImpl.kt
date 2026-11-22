@@ -3,6 +3,7 @@ package com.davcres.rickandmorty.data.repository
 import com.davcres.rickandmorty.core.common.DispatcherProvider
 import com.davcres.rickandmorty.data.cache.CharacterMemoryCache
 import com.davcres.rickandmorty.data.remote.datasource.CharacterRemoteDataSource
+import com.davcres.rickandmorty.data.remote.mapper.toAppError
 import com.davcres.rickandmorty.data.remote.mapper.toDomain
 import com.davcres.rickandmorty.domain.model.Character
 import com.davcres.rickandmorty.domain.model.Result
@@ -27,7 +28,7 @@ class CharacterRepositoryImpl(
                 memoryCache.put(query, remoteCharacters)
                 Result.Success(remoteCharacters)
             } catch (e: Exception) {
-                Result.Error(e)
+                Result.Error(e.toAppError())
             }
         }
 
@@ -38,7 +39,7 @@ class CharacterRepositoryImpl(
                 val character = remoteDataSource.getCharacter(id).toDomain()
                 Result.Success(character)
             } catch (e: Exception) {
-                Result.Error(e)
+                Result.Error(e.toAppError())
             }
         }
 }
