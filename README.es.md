@@ -98,8 +98,15 @@ El estado de las pantallas sigue un flujo unidireccional estructurado a través 
 ### 2. Cancelación Activa de Corrutinas en Búsqueda
 Al teclear en la búsqueda de personajes, las corrutinas y peticiones previas aún en vuelo se cancelan inmediatamente, evitando condiciones de carrera (*race conditions*) y llamadas de red redundantes.
 
-### 3. Caché en Memoria con TTL (Time-To-Live)
-Los resultados de búsqueda y detalles se almacenan en una caché en memoria (`CharacterMemoryCache`) con un TTL de 2 minutos. Las búsquedas repetidas devuelven la información instantáneamente sin consumir red. El tiempo está desacoplado mediante la interfaz `TimeProvider` para facilitar pruebas unitarias deterministas.
+### 3. Sistema de Caché en Dos Niveles (L1 Memoria + L2 Disco con Room)
+Se implementa una estrategia jerárquica de caché (*Cache-Aside*):
+- **L1 (Memoria RAM):** `CharacterMemoryCache` con TTL configurable e inyectado mediante `CacheConfiguration` desde `:app` (**2 minutos en `pre`** y **5 minutos en `pro`**) para acceso inmediato (0ms I/O) durante la navegación y cambios de pantalla.
+- **L2 (Disco / Base de datos Room):** `RickAndMortyDatabase` con esquema relacional normalizado y TTL diferenciado por entorno inyectado mediante `CacheConfiguration` desde `:app` (**1 hora en `pre`** y **24 horas en `pro`**):
+  - `CharacterEntity`: almacena entidades de personajes únicos sin duplicación.
+  - `SearchPageEntity`: metadatos de paginación de la búsqueda (`totalPages`, `hasNextPage`, `updatedAt`).
+  - `SearchPageCharacterCrossRef`: tabla pivote que preserva el orden posicional exacto devuelto por la API remota.
+- **Resiliencia Offline:** Si el usuario se queda sin internet (modo avión o pérdida de cobertura), el repositorio recurre automáticamente a los datos almacenados en Room. Cualquier búsqueda realizada previamente (ej. "ri" o "rick") y los detalles de los personajes ya consultados seguirán siendo completamente navegables sin conexión. El tiempo está desacoplado mediante la interfaz `TimeProvider`.
+- **Desacoplamiento de Transacciones (`TransactionRunner`):** Las inserciones relacionales (personajes, página y relaciones) requieren operaciones atómicas (`withTransaction`). Para evitar acoplar el código a clases internas de Android y permitir tests unitarios puros en la JVM sin mocks estáticos frágiles de Room, las transacciones se abstraen mediante la interfaz `TransactionRunner` inyectada con Koin.
 
 ### 4. Manejo Resiliente de Errores de Red
 La API pública de Rick and Morty responde con un HTTP 404 y JSON `{"error": "There is nothing here"}` cuando una búsqueda no encuentra personajes. La implementación `CharacterRemoteDataSourceImpl` gestiona el HTTP 404 de forma limpia devolviendo una lista vacía en lugar de propagar excepciones inesperadas.

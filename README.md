@@ -98,8 +98,15 @@ Screen state is modeled with unidirectional data flow using a custom `BaseViewMo
 ### 2. Active Coroutine Cancellation
 When searching characters, active coroutines and previous in-flight requests are immediately cancelled as the user types, eliminating race conditions and avoiding redundant network requests.
 
-### 3. In-Memory Cache with TTL
-Search results and character details are cached in an in-memory repository (`CharacterMemoryCache`) with a 2-minute Time-To-Live (TTL). Repeated queries hit the cache instantly without network overhead. The cache uses an injectable `TimeProvider` interface for deterministic unit testing.
+### 3. Two-Level Caching System (L1 In-Memory + L2 Room Disk)
+A hierarchical Cache-Aside data strategy is implemented:
+- **L1 (In-Memory RAM):** `CharacterMemoryCache` with configurable TTL injected via `CacheConfiguration` from `:app` (**2 minutes in `pre`** and **5 minutes in `pro`**) for instant access (0ms I/O) during navigation and screen changes.
+- **L2 (Disk / Room Database):** `RickAndMortyDatabase` with a normalized relational schema and environment-differentiated TTL injected via `CacheConfiguration` from `:app` (**1 hour in `pre`** and **24 hours in `pro`**):
+  - `CharacterEntity`: stores unique character records without data duplication.
+  - `SearchPageEntity`: search query pagination metadata (`totalPages`, `hasNextPage`, `updatedAt`).
+  - `SearchPageCharacterCrossRef`: pivot table preserving the exact positional order returned by the remote API.
+- **Offline Resilience:** If network connectivity fails (airplane mode or loss of signal), the repository automatically falls back to cached data in Room. Any previously searched queries (e.g. "ri" or "rick") and character details already visited remain fully browseable offline. Time is decoupled via the `TimeProvider` interface.
+- **Transaction Decoupling (`TransactionRunner`):** Relational insertions (characters, search page, and cross-references) require atomic execution (`withTransaction`). To avoid coupling the local data source to internal Android classes and enable fast JVM unit tests without fragile static Room mocks, transactions are abstracted via the `TransactionRunner` interface injected through Koin.
 
 ### 4. Resilient Network Error Handling
 The public Rick and Morty API returns HTTP 404 with body `{"error": "There is nothing here"}` when a character name search finds no results. `CharacterRemoteDataSourceImpl` handles HTTP 404 gracefully, mapping it to an empty list without throwing unexpected network exceptions.
