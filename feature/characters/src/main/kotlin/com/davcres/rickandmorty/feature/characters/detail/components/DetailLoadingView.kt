@@ -7,13 +7,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.davcres.rickandmorty.core.ui.Loader
 import com.davcres.rickandmorty.core.ui.Text
 import com.davcres.rickandmorty.feature.characters.R
 
@@ -30,7 +30,7 @@ fun DetailLoadingView(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.padding(SPACING_MEDIUM),
         ) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            Loader()
             Spacer(modifier = Modifier.height(SPACING_MEDIUM))
             Text(
                 text = stringResource(R.string.detail_loading),
