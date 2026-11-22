@@ -1,5 +1,6 @@
 package com.davcres.rickandmorty.domain.usecase
 
+import com.davcres.rickandmorty.domain.model.AppError
 import com.davcres.rickandmorty.domain.model.Character
 import com.davcres.rickandmorty.domain.model.Result
 import com.davcres.rickandmorty.domain.repository.CharacterRepository
@@ -50,13 +51,13 @@ class GetCharacterDetailUseCaseTest {
     @Test
     fun `invoke should return error when repository fails`() = runTest {
         val characterId = 999
-        val exception = RuntimeException("Character not found")
-        coEvery { repository.getCharacterDetail(characterId) } returns Result.Error(exception)
+        val appError = AppError.NotFound
+        coEvery { repository.getCharacterDetail(characterId) } returns Result.Error(appError)
 
         val result = useCase(characterId)
 
         assertTrue(result is Result.Error)
-        assertEquals(exception, (result as Result.Error).exception)
+        assertEquals(appError, (result as Result.Error).error)
         coVerify(exactly = 1) { repository.getCharacterDetail(characterId) }
     }
 }
