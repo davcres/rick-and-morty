@@ -16,7 +16,7 @@ class RickAndMortyApplication : Application() {
             androidContext(this@RickAndMortyApplication)
             modules(appModules + appConfigModule)
 
-            analytics() // kotzilla analytics
+            analytics()
         }
     }
 }
