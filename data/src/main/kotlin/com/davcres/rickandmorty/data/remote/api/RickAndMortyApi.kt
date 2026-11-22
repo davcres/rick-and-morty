@@ -11,6 +11,7 @@ interface RickAndMortyApi {
     @GET("character")
     suspend fun searchCharacters(
         @Query("name") name: String,
+        @Query("page") page: Int = 1,
     ): CharacterResponseDto
 
     @GET("character/{id}")

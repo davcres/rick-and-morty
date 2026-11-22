@@ -19,6 +19,7 @@ Build a simple, robust Android application that consumes the public **Rick and M
 ### 2.1 Search Screen
 - **Initial View:** The app must present an initial screen containing a search text field to query characters/items against the Rick and Morty API (https://rickandmortyapi.com/documentation).
 - **Results Presentation:** Query results must be displayed cleanly in a list/grid format with relevant item summaries (e.g., character avatar image, name, status, species).
+- **Pagination (Infinite Scroll):** Character queries are paginated by the API (20 items per page). The search screen supports infinite scrolling, automatically fetching and appending subsequent pages as the user scrolls, while displaying loading and retry indicators for pagination failures without discarding loaded items.
 - **Empty / Loading / Error States:** The UI must handle and display distinct states: initial empty state, loading indicator during active network/cache retrieval, empty results message if no matches exist, and error feedback when network failures occur.
 
 ### 2.2 Cancellation & Request Handling
@@ -49,10 +50,10 @@ Build a simple, robust Android application that consumes the public **Rick and M
 - The search pipeline must properly handle debouncing and cooperative cancellation so background operations do not leak or run unnecessarily.
 
 ### 3.4 Caching Strategy
-- **Per-Query Caching:** Search query results must be cached per query string.
+- **Per-Query & Per-Page Caching:** Search query results must be cached per query string and page index (`query#page`).
 - **Time-to-Live (TTL):** Cached results must have a limited validity window (e.g., **2 to 5 minutes**).
 - **Cache Hit / Invalidation Logic:**
-  - If a valid (non-expired) cache entry exists for the requested query, return it immediately without initiating a network request.
+  - If a valid (non-expired) cache entry exists for the requested query and page, return it immediately without initiating a network request.
   - If no cache entry exists or the TTL has expired, fetch fresh data from the network, update the cache with a new timestamp, and return the data.
 - **Storage Scope:** An **in-memory cache** is sufficient and required (disk persistence via Room/DataStore is optional).
 

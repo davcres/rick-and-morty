@@ -13,6 +13,8 @@
     <string name="error_timeout_message">Damn it, Morty! The portal gun lost signal across dimensions. The server took too long to answer!</string>
     <string name="error_network_message">Looks like the interdimensional cable is unplugged. Check your connection!</string>
     <string name="action_retry">Retry</string>
+    <string name="pagination_retry">Retry loading more</string>
+    <string name="pagination_error_message">Could not load more characters.</string>
     <string name="character_avatar_content_description">Avatar of %1$s</string>
     <string name="character_last_known_location">Last known location: %1$s</string>
     <string name="character_status_dot_description">Status indicator</string>

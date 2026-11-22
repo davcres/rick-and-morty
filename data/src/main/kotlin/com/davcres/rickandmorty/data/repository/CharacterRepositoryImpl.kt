@@ -6,6 +6,7 @@ import com.davcres.rickandmorty.data.remote.datasource.CharacterRemoteDataSource
 import com.davcres.rickandmorty.data.remote.mapper.toAppError
 import com.davcres.rickandmorty.data.remote.mapper.toDomain
 import com.davcres.rickandmorty.domain.model.Character
+import com.davcres.rickandmorty.domain.model.PagedCharacters
 import com.davcres.rickandmorty.domain.model.Result
 import com.davcres.rickandmorty.domain.repository.CharacterRepository
 import kotlinx.coroutines.withContext
@@ -17,16 +18,25 @@ class CharacterRepositoryImpl(
 ) : CharacterRepository {
 
     @Suppress("TooGenericExceptionCaught")
-    override suspend fun searchCharacters(query: String): Result<List<Character>> =
+    override suspend fun searchCharacters(query: String, page: Int): Result<PagedCharacters> =
         withContext(dispatchers.io) {
-            val cached = memoryCache.get(query)
+            val cached = memoryCache.get(query, page)
             if (cached != null) {
                 return@withContext Result.Success(cached)
             }
             try {
-                val remoteCharacters = remoteDataSource.searchCharacters(query).map { it.toDomain() }
-                memoryCache.put(query, remoteCharacters)
-                Result.Success(remoteCharacters)
+                val response = remoteDataSource.searchCharacters(query, page)
+                val characters = response.results.map { it.toDomain() }
+                val totalPages = response.info?.pages ?: 0
+                val hasNextPage = response.info?.next != null
+                val pagedCharacters = PagedCharacters(
+                    characters = characters,
+                    page = page,
+                    totalPages = totalPages,
+                    hasNextPage = hasNextPage,
+                )
+                memoryCache.put(query, page, pagedCharacters)
+                Result.Success(pagedCharacters)
             } catch (e: Exception) {
                 Result.Error(e.toAppError())
             }

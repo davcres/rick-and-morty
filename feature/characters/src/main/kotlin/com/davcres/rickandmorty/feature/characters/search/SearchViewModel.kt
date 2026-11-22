@@ -18,6 +18,7 @@ class SearchViewModel(
 ) : BaseViewModel<SearchUiState, SearchUiIntent, SearchUiEffect>(SearchUiState()) {
 
     private var searchJob: Job? = null
+    private var loadMoreJob: Job? = null
 
     override fun handleIntent(intent: SearchUiIntent) {
         when (intent) {
@@ -25,43 +26,102 @@ class SearchViewModel(
             is SearchUiIntent.CharacterClicked -> sendEffect(SearchUiEffect.NavigateToDetail(intent.characterId))
             is SearchUiIntent.ClearSearch -> onClearSearch()
             is SearchUiIntent.Retry -> onRetry()
+            is SearchUiIntent.LoadMore -> onLoadMore()
         }
     }
 
     private fun onQueryChanged(query: String) {
-        updateState { copy(query = query, error = null) }
+        updateState {
+            copy(
+                query = query,
+                error = null,
+                paginationError = null,
+                currentPage = 1,
+                canPaginate = false,
+            )
+        }
         searchJob?.cancel()
+        loadMoreJob?.cancel()
 
         if (query.isBlank()) {
-            updateState { copy(isLoading = false, characters = emptyList(), error = null) }
+            updateState {
+                copy(
+                    isLoading = false,
+                    isLoadingMore = false,
+                    characters = emptyList(),
+                    error = null,
+                    paginationError = null,
+                )
+            }
             return
         }
 
         searchJob = viewModelScope.launch(dispatcherProvider.io) {
             delay(DEBOUNCE_DELAY_MILLIS)
-            executeSearch(query.trim())
+            executeSearch(query.trim(), page = 1)
         }
     }
 
     private fun onRetry() {
         val query = currentState.query
         if (query.isNotBlank()) {
-            searchJob?.cancel()
-            searchJob = viewModelScope.launch(dispatcherProvider.io) {
-                executeSearch(query.trim())
+            if (currentState.paginationError != null) {
+                onLoadMore()
+            } else {
+                searchJob?.cancel()
+                loadMoreJob?.cancel()
+                searchJob = viewModelScope.launch(dispatcherProvider.io) {
+                    executeSearch(query.trim(), page = 1)
+                }
             }
         }
     }
 
-    private suspend fun executeSearch(query: String) {
-        updateState { copy(isLoading = true, error = null) }
-        when (val result = searchCharactersUseCase(query)) {
+    private fun onLoadMore() {
+        if (!currentState.canPaginate || currentState.isLoading || currentState.isLoadingMore) {
+            return
+        }
+        val nextPage = currentState.currentPage + 1
+        val query = currentState.query.trim()
+
+        updateState { copy(isLoadingMore = true, paginationError = null) }
+        loadMoreJob = viewModelScope.launch(dispatcherProvider.io) {
+            when (val result = searchCharactersUseCase(query, nextPage)) {
+                is Result.Success -> {
+                    updateState {
+                        copy(
+                            isLoadingMore = false,
+                            characters = currentState.characters + result.data.characters,
+                            currentPage = result.data.page,
+                            canPaginate = result.data.hasNextPage,
+                            paginationError = null,
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    updateState {
+                        copy(
+                            isLoadingMore = false,
+                            paginationError = result.error.toUiText(),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun executeSearch(query: String, page: Int) {
+        updateState { copy(isLoading = true, error = null, paginationError = null) }
+        when (val result = searchCharactersUseCase(query, page)) {
             is Result.Success -> {
                 updateState {
                     copy(
                         isLoading = false,
-                        characters = result.data,
+                        characters = result.data.characters,
+                        currentPage = result.data.page,
+                        canPaginate = result.data.hasNextPage,
                         error = null,
+                        paginationError = null,
                     )
                 }
             }
@@ -70,7 +130,10 @@ class SearchViewModel(
                     copy(
                         isLoading = false,
                         characters = emptyList(),
+                        currentPage = 1,
+                        canPaginate = false,
                         error = result.error.toUiText(),
+                        paginationError = null,
                     )
                 }
             }
@@ -79,6 +142,18 @@ class SearchViewModel(
 
     private fun onClearSearch() {
         searchJob?.cancel()
-        updateState { copy(query = "", isLoading = false, characters = emptyList(), error = null) }
+        loadMoreJob?.cancel()
+        updateState {
+            copy(
+                query = "",
+                isLoading = false,
+                isLoadingMore = false,
+                characters = emptyList(),
+                currentPage = 1,
+                canPaginate = false,
+                error = null,
+                paginationError = null,
+            )
+        }
     }
 }

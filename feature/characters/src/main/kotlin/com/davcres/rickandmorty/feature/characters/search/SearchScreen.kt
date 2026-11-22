@@ -102,6 +102,10 @@ fun SearchContent(
                     else -> {
                         SearchCharacterList(
                             characters = state.characters,
+                            canPaginate = state.canPaginate,
+                            isLoadingMore = state.isLoadingMore,
+                            paginationError = state.paginationError,
+                            onLoadMore = { onIntent(SearchUiIntent.LoadMore) },
                             onCharacterClick = { onIntent(SearchUiIntent.CharacterClicked(it)) },
                         )
                     }
