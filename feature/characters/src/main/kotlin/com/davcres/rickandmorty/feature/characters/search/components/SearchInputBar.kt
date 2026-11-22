@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -31,8 +32,14 @@ fun SearchInputBar(
         placeholder = stringResource(R.string.search_placeholder),
         contentDescription = stringResource(R.string.search_content_description),
         hasClearIcon = true,
+        clearIconContentDescription = stringResource(R.string.search_clear_description),
         cornerRadius = SEARCH_FIELD_CORNER_RADIUS,
-        leadingIcon = Icons.Default.Search,
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+            )
+        },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
     )
