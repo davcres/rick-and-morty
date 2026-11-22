@@ -99,7 +99,7 @@ Screen state is modeled with unidirectional data flow using a custom `BaseViewMo
 When searching characters, active coroutines and previous in-flight requests are immediately cancelled as the user types, eliminating race conditions and avoiding redundant network requests.
 
 ### 3. In-Memory Cache with TTL
-Search results and character details are cached in an in-memory repository (`CharacterMemoryCache`) with a 5-minute Time-To-Live (TTL). Repeated queries hit the cache instantly without network overhead. The cache uses an injectable `TimeProvider` interface for deterministic unit testing.
+Search results and character details are cached in an in-memory repository (`CharacterMemoryCache`) with a 2-minute Time-To-Live (TTL). Repeated queries hit the cache instantly without network overhead. The cache uses an injectable `TimeProvider` interface for deterministic unit testing.
 
 ### 4. Resilient Network Error Handling
 The public Rick and Morty API returns HTTP 404 with body `{"error": "There is nothing here"}` when a character name search finds no results. `CharacterRemoteDataSourceImpl` handles HTTP 404 gracefully, mapping it to an empty list without throwing unexpected network exceptions.

@@ -151,8 +151,22 @@ class CharacterRepositoryImplTest {
     }
 
     @Test
-    fun `getCharacterDetail should return character on remote success`() = runTest {
+    fun `getCharacterDetail should return cached character immediately when cache hit`() = runTest {
         val characterId = 1
+        every { memoryCache.getCharacter(characterId) } returns sampleCharacter
+
+        val result = repository.getCharacterDetail(characterId)
+
+        assertTrue(result is Result.Success)
+        assertEquals(sampleCharacter, (result as Result.Success).data)
+        verify(exactly = 1) { memoryCache.getCharacter(characterId) }
+        coVerify(exactly = 0) { remoteDataSource.getCharacter(any()) }
+    }
+
+    @Test
+    fun `getCharacterDetail should call remote and cache result on cache miss`() = runTest {
+        val characterId = 1
+        every { memoryCache.getCharacter(characterId) } returns null
         coEvery { remoteDataSource.getCharacter(characterId) } returns sampleCharacterDto
 
         val result = repository.getCharacterDetail(characterId)
@@ -160,19 +174,24 @@ class CharacterRepositoryImplTest {
         assertTrue(result is Result.Success)
         assertEquals(sampleCharacter.id, (result as Result.Success).data.id)
         assertEquals(sampleCharacter.name, (result as Result.Success).data.name)
+        verify(exactly = 1) { memoryCache.getCharacter(characterId) }
         coVerify(exactly = 1) { remoteDataSource.getCharacter(characterId) }
+        verify(exactly = 1) { memoryCache.putCharacter(sampleCharacter) }
     }
 
     @Test
     fun `getCharacterDetail should return error when remoteDataSource throws exception`() = runTest {
         val characterId = 1
         val exception = RuntimeException("Server error")
+        every { memoryCache.getCharacter(characterId) } returns null
         coEvery { remoteDataSource.getCharacter(characterId) } throws exception
 
         val result = repository.getCharacterDetail(characterId)
 
         assertTrue(result is Result.Error)
         assertEquals(AppError.Unknown(exception), (result as Result.Error).error)
+        verify(exactly = 1) { memoryCache.getCharacter(characterId) }
         coVerify(exactly = 1) { remoteDataSource.getCharacter(characterId) }
+        verify(exactly = 0) { memoryCache.putCharacter(any()) }
     }
 }

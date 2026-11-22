@@ -47,6 +47,12 @@ fun CharactersNavigation() {
                         fadeOut(animationSpec = tween(TRANSITION_DURATION_MILLIS)),
                     )
                 },
+                predictivePopTransitionSpec = {
+                    ContentTransform(
+                        fadeIn(animationSpec = tween(TRANSITION_DURATION_MILLIS)),
+                        fadeOut(animationSpec = tween(TRANSITION_DURATION_MILLIS)),
+                    )
+                },
                 entryProvider = entryProvider {
                     entry<NavDestination.Search> {
                         CompositionLocalProvider( // Needed for shared element transitions

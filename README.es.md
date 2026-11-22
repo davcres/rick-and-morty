@@ -99,7 +99,7 @@ El estado de las pantallas sigue un flujo unidireccional estructurado a través 
 Al teclear en la búsqueda de personajes, las corrutinas y peticiones previas aún en vuelo se cancelan inmediatamente, evitando condiciones de carrera (*race conditions*) y llamadas de red redundantes.
 
 ### 3. Caché en Memoria con TTL (Time-To-Live)
-Los resultados de búsqueda y detalles se almacenan en una caché en memoria (`CharacterMemoryCache`) con un TTL de 5 minutos. Las búsquedas repetidas devuelven la información instantáneamente sin consumir red. El tiempo está desacoplado mediante la interfaz `TimeProvider` para facilitar pruebas unitarias deterministas.
+Los resultados de búsqueda y detalles se almacenan en una caché en memoria (`CharacterMemoryCache`) con un TTL de 2 minutos. Las búsquedas repetidas devuelven la información instantáneamente sin consumir red. El tiempo está desacoplado mediante la interfaz `TimeProvider` para facilitar pruebas unitarias deterministas.
 
 ### 4. Manejo Resiliente de Errores de Red
 La API pública de Rick and Morty responde con un HTTP 404 y JSON `{"error": "There is nothing here"}` cuando una búsqueda no encuentra personajes. La implementación `CharacterRemoteDataSourceImpl` gestiona el HTTP 404 de forma limpia devolviendo una lista vacía en lugar de propagar excepciones inesperadas.

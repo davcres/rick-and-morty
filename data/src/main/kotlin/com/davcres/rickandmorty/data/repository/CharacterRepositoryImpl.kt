@@ -45,8 +45,13 @@ class CharacterRepositoryImpl(
     @Suppress("TooGenericExceptionCaught")
     override suspend fun getCharacterDetail(id: Int): Result<Character> =
         withContext(dispatchers.io) {
+            val cached = memoryCache.getCharacter(id)
+            if (cached != null) {
+                return@withContext Result.Success(cached)
+            }
             try {
                 val character = remoteDataSource.getCharacter(id).toDomain()
+                memoryCache.putCharacter(character)
                 Result.Success(character)
             } catch (e: Exception) {
                 Result.Error(e.toAppError())
