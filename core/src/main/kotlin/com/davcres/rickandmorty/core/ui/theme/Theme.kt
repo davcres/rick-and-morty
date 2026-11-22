@@ -32,47 +32,49 @@ private val LightColorScheme = lightColorScheme(
     onBackground = SurfaceColors.OnBackgroundLight,
     surface = SurfaceColors.SurfaceLight,
     onSurface = SurfaceColors.OnSurfaceLight,
+    surfaceVariant = SurfaceColors.SurfaceVariantLight,
+    onSurfaceVariant = SurfaceColors.OnSurfaceVariantLight,
 
-    outline = BrandColors.NeutralVariant
+    outline = BrandColors.OutlineLight
 )
 
 /**
- * Paleta oscura correspondiente.
- * Si quieres otro contraste, ajusta estos valores a mano
- * en lugar de sólo reciclar los de BrandColors.
+ * Paleta oscura correspondiente con estética cósmica / Rick & Morty.
  */
 private val DarkColorScheme = darkColorScheme(
     primary = BrandColors.Primary,
     onPrimary = BrandColors.OnPrimary,
-    primaryContainer = BrandColors.PrimaryContainer,
-    onPrimaryContainer = BrandColors.OnPrimaryContainer,
+    primaryContainer = BrandColors.PrimaryContainerDark,
+    onPrimaryContainer = BrandColors.OnPrimaryContainerDark,
 
     secondary = BrandColors.Secondary,
     onSecondary = BrandColors.OnSecondary,
-    secondaryContainer = BrandColors.SecondaryContainer,
-    onSecondaryContainer = BrandColors.OnSecondaryContainer,
+    secondaryContainer = BrandColors.SecondaryContainerDark,
+    onSecondaryContainer = BrandColors.OnSecondaryContainerDark,
 
     tertiary = BrandColors.Tertiary,
     onTertiary = BrandColors.OnTertiary,
-    tertiaryContainer = BrandColors.TertiaryContainer,
-    onTertiaryContainer = BrandColors.OnTertiaryContainer,
+    tertiaryContainer = BrandColors.TertiaryContainerDark,
+    onTertiaryContainer = BrandColors.OnTertiaryContainerDark,
 
     error = BrandColors.Error,
     onError = BrandColors.OnError,
-    errorContainer = BrandColors.ErrorContainer,
-    onErrorContainer = BrandColors.OnErrorContainer,
+    errorContainer = BrandColors.ErrorContainerDark,
+    onErrorContainer = BrandColors.OnErrorContainerDark,
 
     background = SurfaceColors.BackgroundDark,
     onBackground = SurfaceColors.OnBackgroundDark,
     surface = SurfaceColors.SurfaceDark,
     onSurface = SurfaceColors.OnSurfaceDark,
+    surfaceVariant = SurfaceColors.SurfaceVariantDark,
+    onSurfaceVariant = SurfaceColors.OnSurfaceVariantDark,
 
-    outline = BrandColors.NeutralVariant
+    outline = BrandColors.OutlineDark
 )
 
 @Composable
 fun RickAndMortyTheme(
-    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    themeMode: ThemeMode = ThemeMode.DARK,
     // Dynamic color is available on Android 12+
     content: @Composable () -> Unit
 ) {
