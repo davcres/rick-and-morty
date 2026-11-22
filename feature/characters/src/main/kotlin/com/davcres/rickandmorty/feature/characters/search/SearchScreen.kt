@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.davcres.rickandmorty.core.ui.UiText
 import com.davcres.rickandmorty.core.ui.extensions.modifiers.clearFocusOnTap
 import com.davcres.rickandmorty.core.ui.theme.RickAndMortyTheme
 import com.davcres.rickandmorty.domain.model.Character
@@ -167,7 +168,7 @@ private fun SearchContentErrorPreview() {
         SearchContent(
             state = SearchUiState(
                 query = "Rick",
-                error = "Network connection failed",
+                error = UiText.DynamicString("Network connection failed"),
             ),
             onIntent = {},
         )

@@ -5,6 +5,7 @@ import com.davcres.rickandmorty.core.common.DispatcherProvider
 import com.davcres.rickandmorty.core.viewmodels.BaseViewModel
 import com.davcres.rickandmorty.domain.model.Result
 import com.davcres.rickandmorty.domain.usecase.SearchCharactersUseCase
+import com.davcres.rickandmorty.feature.characters.mapper.toUiText
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -69,7 +70,7 @@ class SearchViewModel(
                     copy(
                         isLoading = false,
                         characters = emptyList(),
-                        error = result.exception.message ?: "An unexpected error occurred",
+                        error = result.error.toUiText(),
                     )
                 }
             }
