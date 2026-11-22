@@ -44,6 +44,8 @@ android {
 
             buildConfigField("String", "API_BASE_URL", "\"https://api-pre.example.com\"")
             buildConfigField("Boolean", "IS_PRO", "false")
+            buildConfigField("long", "CACHE_L1_TTL_MINUTES", "2L")
+            buildConfigField("long", "CACHE_L2_TTL_HOURS", "1L")
         }
         create("pro") {
             dimension = "env"
@@ -51,6 +53,8 @@ android {
 
             buildConfigField("String", "API_BASE_URL", "\"https://api.example.com\"")
             buildConfigField("Boolean", "IS_PRO", "true")
+            buildConfigField("long", "CACHE_L1_TTL_MINUTES", "5L")
+            buildConfigField("long", "CACHE_L2_TTL_HOURS", "24L")
         }
     }
 

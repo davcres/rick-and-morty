@@ -1,6 +1,7 @@
 package com.davcres.rickandmorty.data.repository
 
 import com.davcres.rickandmorty.data.cache.CharacterMemoryCache
+import com.davcres.rickandmorty.data.local.datasource.CharacterLocalDataSource
 import com.davcres.rickandmorty.data.remote.datasource.CharacterRemoteDataSource
 import com.davcres.rickandmorty.data.remote.model.CharacterDto
 import com.davcres.rickandmorty.data.remote.model.CharacterResponseDto
@@ -28,6 +29,7 @@ import java.net.SocketTimeoutException
 class CharacterRepositoryImplTest {
 
     private lateinit var remoteDataSource: CharacterRemoteDataSource
+    private lateinit var localDataSource: CharacterLocalDataSource
     private lateinit var memoryCache: CharacterMemoryCache
     private lateinit var dispatchers: FakeDispatcherProvider
     private lateinit var repository: CharacterRepositoryImpl
@@ -68,17 +70,19 @@ class CharacterRepositoryImplTest {
     @BeforeEach
     fun setUp() {
         remoteDataSource = mockk()
+        localDataSource = mockk(relaxed = true)
         memoryCache = mockk(relaxed = true)
         dispatchers = FakeDispatcherProvider()
         repository = CharacterRepositoryImpl(
             remoteDataSource = remoteDataSource,
+            localDataSource = localDataSource,
             memoryCache = memoryCache,
             dispatchers = dispatchers,
         )
     }
 
     @Test
-    fun `searchCharacters should return cached data immediately when cache hit`() = runTest {
+    fun `searchCharacters should return L1 memory cached data immediately when L1 hit`() = runTest {
         val query = "Rick"
         val page = 1
         every { memoryCache.get(query, page) } returns samplePagedCharacters
@@ -88,11 +92,29 @@ class CharacterRepositoryImplTest {
         assertTrue(result is Result.Success)
         assertEquals(samplePagedCharacters, (result as Result.Success).data)
         verify(exactly = 1) { memoryCache.get(query, page) }
+        coVerify(exactly = 0) { localDataSource.getPagedCharacters(any(), any(), any()) }
         coVerify(exactly = 0) { remoteDataSource.searchCharacters(any(), any()) }
     }
 
     @Test
-    fun `searchCharacters should call remote and cache results on cache miss`() = runTest {
+    fun `searchCharacters should return L2 disk data and populate L1 when L1 miss and L2 hit`() = runTest {
+        val query = "Rick"
+        val page = 1
+        every { memoryCache.get(query, page) } returns null
+        coEvery { localDataSource.getPagedCharacters(query, page) } returns samplePagedCharacters
+
+        val result = repository.searchCharacters(query, page)
+
+        assertTrue(result is Result.Success)
+        assertEquals(samplePagedCharacters, (result as Result.Success).data)
+        verify(exactly = 1) { memoryCache.get(query, page) }
+        coVerify(exactly = 1) { localDataSource.getPagedCharacters(query, page) }
+        verify(exactly = 1) { memoryCache.put(query, page, samplePagedCharacters) }
+        coVerify(exactly = 0) { remoteDataSource.searchCharacters(any(), any()) }
+    }
+
+    @Test
+    fun `searchCharacters should call remote and cache results in L1 and L2 on cache miss`() = runTest {
         val query = "Rick"
         val page = 1
         val remoteResponse = CharacterResponseDto(
@@ -100,6 +122,7 @@ class CharacterRepositoryImplTest {
             results = listOf(sampleCharacterDto),
         )
         every { memoryCache.get(query, page) } returns null
+        coEvery { localDataSource.getPagedCharacters(query, page) } returns null
         coEvery { remoteDataSource.searchCharacters(query, page) } returns remoteResponse
 
         val result = repository.searchCharacters(query, page)
@@ -113,7 +136,9 @@ class CharacterRepositoryImplTest {
         assertEquals(2, data.totalPages)
         assertTrue(data.hasNextPage)
         verify(exactly = 1) { memoryCache.get(query, page) }
+        coVerify(exactly = 1) { localDataSource.getPagedCharacters(query, page) }
         coVerify(exactly = 1) { remoteDataSource.searchCharacters(query, page) }
+        coVerify(exactly = 1) { localDataSource.savePagedCharacters(query, page, any()) }
         verify(exactly = 1) { memoryCache.put(query, page, any()) }
     }
 
@@ -126,6 +151,7 @@ class CharacterRepositoryImplTest {
             results = listOf(sampleCharacterDto),
         )
         every { memoryCache.get(query, page) } returns null
+        coEvery { localDataSource.getPagedCharacters(query, page) } returns null
         coEvery { remoteDataSource.searchCharacters(query, page) } returns remoteResponse
 
         val result = repository.searchCharacters(query, page)
@@ -136,12 +162,31 @@ class CharacterRepositoryImplTest {
     }
 
     @Test
-    fun `searchCharacters should return error when remoteDataSource throws exception`() = runTest {
+    fun `searchCharacters should return offline L2 data when remote throws and L2 has stale data`() = runTest {
         val query = "Rick"
         val page = 1
         val exception = SocketTimeoutException("Network timeout")
         every { memoryCache.get(query, page) } returns null
+        coEvery { localDataSource.getPagedCharacters(query, page) } returns null
         coEvery { remoteDataSource.searchCharacters(query, page) } throws exception
+        coEvery { localDataSource.getPagedCharacters(query, page, ignoreTtl = true) } returns samplePagedCharacters
+
+        val result = repository.searchCharacters(query, page)
+
+        assertTrue(result is Result.Success)
+        assertEquals(samplePagedCharacters, (result as Result.Success).data)
+        verify(exactly = 1) { memoryCache.put(query, page, samplePagedCharacters) }
+    }
+
+    @Test
+    fun `searchCharacters should return error when remote throws and L2 has no data`() = runTest {
+        val query = "Rick"
+        val page = 1
+        val exception = SocketTimeoutException("Network timeout")
+        every { memoryCache.get(query, page) } returns null
+        coEvery { localDataSource.getPagedCharacters(query, page) } returns null
+        coEvery { remoteDataSource.searchCharacters(query, page) } throws exception
+        coEvery { localDataSource.getPagedCharacters(query, page, ignoreTtl = true) } returns null
 
         val result = repository.searchCharacters(query, page)
 
@@ -151,7 +196,7 @@ class CharacterRepositoryImplTest {
     }
 
     @Test
-    fun `getCharacterDetail should return cached character immediately when cache hit`() = runTest {
+    fun `getCharacterDetail should return L1 cached character immediately when L1 hit`() = runTest {
         val characterId = 1
         every { memoryCache.getCharacter(characterId) } returns sampleCharacter
 
@@ -160,13 +205,31 @@ class CharacterRepositoryImplTest {
         assertTrue(result is Result.Success)
         assertEquals(sampleCharacter, (result as Result.Success).data)
         verify(exactly = 1) { memoryCache.getCharacter(characterId) }
+        coVerify(exactly = 0) { localDataSource.getCharacter(any()) }
         coVerify(exactly = 0) { remoteDataSource.getCharacter(any()) }
     }
 
     @Test
-    fun `getCharacterDetail should call remote and cache result on cache miss`() = runTest {
+    fun `getCharacterDetail should return L2 character and populate L1 when L1 miss and L2 hit`() = runTest {
         val characterId = 1
         every { memoryCache.getCharacter(characterId) } returns null
+        coEvery { localDataSource.getCharacter(characterId) } returns sampleCharacter
+
+        val result = repository.getCharacterDetail(characterId)
+
+        assertTrue(result is Result.Success)
+        assertEquals(sampleCharacter, (result as Result.Success).data)
+        verify(exactly = 1) { memoryCache.getCharacter(characterId) }
+        coVerify(exactly = 1) { localDataSource.getCharacter(characterId) }
+        verify(exactly = 1) { memoryCache.putCharacter(sampleCharacter) }
+        coVerify(exactly = 0) { remoteDataSource.getCharacter(any()) }
+    }
+
+    @Test
+    fun `getCharacterDetail should call remote and cache result in L1 and L2 on miss`() = runTest {
+        val characterId = 1
+        every { memoryCache.getCharacter(characterId) } returns null
+        coEvery { localDataSource.getCharacter(characterId) } returns null
         coEvery { remoteDataSource.getCharacter(characterId) } returns sampleCharacterDto
 
         val result = repository.getCharacterDetail(characterId)
@@ -175,7 +238,9 @@ class CharacterRepositoryImplTest {
         assertEquals(sampleCharacter.id, (result as Result.Success).data.id)
         assertEquals(sampleCharacter.name, (result as Result.Success).data.name)
         verify(exactly = 1) { memoryCache.getCharacter(characterId) }
+        coVerify(exactly = 1) { localDataSource.getCharacter(characterId) }
         coVerify(exactly = 1) { remoteDataSource.getCharacter(characterId) }
+        coVerify(exactly = 1) { localDataSource.saveCharacter(sampleCharacter) }
         verify(exactly = 1) { memoryCache.putCharacter(sampleCharacter) }
     }
 
@@ -184,6 +249,7 @@ class CharacterRepositoryImplTest {
         val characterId = 1
         val exception = RuntimeException("Server error")
         every { memoryCache.getCharacter(characterId) } returns null
+        coEvery { localDataSource.getCharacter(characterId) } returns null
         coEvery { remoteDataSource.getCharacter(characterId) } throws exception
 
         val result = repository.getCharacterDetail(characterId)
@@ -191,7 +257,9 @@ class CharacterRepositoryImplTest {
         assertTrue(result is Result.Error)
         assertEquals(AppError.Unknown(exception), (result as Result.Error).error)
         verify(exactly = 1) { memoryCache.getCharacter(characterId) }
+        coVerify(exactly = 1) { localDataSource.getCharacter(characterId) }
         coVerify(exactly = 1) { remoteDataSource.getCharacter(characterId) }
         verify(exactly = 0) { memoryCache.putCharacter(any()) }
+        coVerify(exactly = 0) { localDataSource.saveCharacter(any()) }
     }
 }
