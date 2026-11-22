@@ -113,14 +113,91 @@ class CharacterMemoryCacheTest {
     }
 
     @Test
+    fun `getCharacter should return null when character is not in cache`() {
+        assertNull(cache.getCharacter(1))
+    }
+
+    @Test
+    fun `putCharacter and getCharacter should return cached character within TTL`() {
+        val character = samplePagedCharacters.characters.first()
+        every { timeProvider.currentTimeMillis() } returns 1_000L
+        cache.putCharacter(character)
+
+        every { timeProvider.currentTimeMillis() } returns 2_000L
+        val result = cache.getCharacter(1)
+
+        assertNotNull(result)
+        assertEquals(character, result)
+    }
+
+    @Test
+    fun `put should also cache individual characters from paged characters`() {
+        val character = samplePagedCharacters.characters.first()
+        every { timeProvider.currentTimeMillis() } returns 1_000L
+        cache.put("rick", 1, samplePagedCharacters)
+
+        every { timeProvider.currentTimeMillis() } returns 2_000L
+        val result = cache.getCharacter(character.id)
+
+        assertNotNull(result)
+        assertEquals(character, result)
+    }
+
+    @Test
+    fun `getCharacter should return null and evict entry when TTL has expired`() {
+        val character = samplePagedCharacters.characters.first()
+        every { timeProvider.currentTimeMillis() } returns 1_000L
+        cache.putCharacter(character)
+
+        // Time past TTL (1_000 + 5_001 = 6_001)
+        every { timeProvider.currentTimeMillis() } returns 6_001L
+        val result = cache.getCharacter(character.id)
+
+        assertNull(result)
+
+        // Verifying it was evicted
+        every { timeProvider.currentTimeMillis() } returns 6_002L
+        assertNull(cache.getCharacter(character.id))
+    }
+
+    @Test
+    fun `getCharacter should return character at exact boundary of TTL`() {
+        val character = samplePagedCharacters.characters.first()
+        every { timeProvider.currentTimeMillis() } returns 1_000L
+        cache.putCharacter(character)
+
+        // Exactly at boundary
+        every { timeProvider.currentTimeMillis() } returns 6_000L
+        val result = cache.getCharacter(character.id)
+
+        assertNotNull(result)
+        assertEquals(character, result)
+    }
+
+    @Test
+    fun `putCharacters should cache multiple characters with current timestamp`() {
+        val character1 = samplePagedCharacters.characters.first()
+        val character2 = character1.copy(id = 2, name = "Morty Smith")
+        every { timeProvider.currentTimeMillis() } returns 1_000L
+        cache.putCharacters(listOf(character1, character2))
+
+        every { timeProvider.currentTimeMillis() } returns 2_000L
+        assertEquals(character1, cache.getCharacter(1))
+        assertEquals(character2, cache.getCharacter(2))
+    }
+
+    @Test
     fun `clear should remove all cached items`() {
+        val character = samplePagedCharacters.characters.first()
         every { timeProvider.currentTimeMillis() } returns 1_000L
         cache.put("rick", 1, samplePagedCharacters)
         cache.put("morty", 1, samplePagedCharacters)
+        cache.putCharacter(character)
 
         cache.clear()
 
         assertNull(cache.get("rick", 1))
         assertNull(cache.get("morty", 1))
+        assertNull(cache.getCharacter(character.id))
     }
 }
