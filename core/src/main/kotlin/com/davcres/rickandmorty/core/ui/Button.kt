@@ -43,6 +43,7 @@ import com.davcres.rickandmorty.core.ui.extensions.modifiers.drawUnderline
 import com.davcres.rickandmorty.core.ui.theme.Color.Button.ButtonPrimary
 import com.davcres.rickandmorty.core.ui.theme.Color.Button.ButtonPrimaryDisabled
 import com.davcres.rickandmorty.core.ui.theme.Color.Button.ButtonPrimaryDisabledText
+import com.davcres.rickandmorty.core.ui.theme.Color.Button.ButtonPrimaryText
 import com.davcres.rickandmorty.core.ui.theme.Color.Button.ButtonSecondary
 import com.davcres.rickandmorty.core.ui.theme.Color.Button.ButtonSecondaryDisabled
 import com.davcres.rickandmorty.core.ui.theme.Color.Button.ButtonTertiary
@@ -89,7 +90,7 @@ object ButtonDefaults {
     fun colors(style: ButtonStyle, isSelected: Boolean = false): ButtonColors = when (style) {
         ButtonStyle.PRIMARY -> ButtonColors(
             containerColor = ButtonPrimary,
-            contentColor = white,
+            contentColor = ButtonPrimaryText,
             disabledContainerColor = ButtonPrimaryDisabled,
             disabledContentColor = ButtonPrimaryDisabledText,
         )
@@ -136,7 +137,7 @@ object ButtonDefaults {
     private fun resolveTogglePrimaryColors(isSelected: Boolean): ButtonColors = if (isSelected) {
         ButtonColors(
             containerColor = ButtonTogglePrimarySelected,
-            contentColor = white,
+            contentColor = ButtonPrimaryText,
             disabledContainerColor = ButtonTogglePrimarySelectedDisabled,
             disabledContentColor = ButtonTogglePrimarySelectedDisabledText,
         )

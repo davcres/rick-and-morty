@@ -8,27 +8,28 @@ object Color {
     }
 
     object Button {
-        val ButtonPrimary = Color(0xFF98A92A)
-        val ButtonPrimaryDisabled = Color(0xFFE7E6E6)
-        val ButtonPrimaryDisabledText = Color(0xFF7A7578)
+        val ButtonPrimary = Color(0xFF00FF29)
+        val ButtonPrimaryText = Color(0xFF003806)
+        val ButtonPrimaryDisabled = Color(0xFFE2E8F0)
+        val ButtonPrimaryDisabledText = Color(0xFF94A3B8)
 
-        val ButtonSecondary = Color(0xFF095751)
-        val ButtonSecondaryDisabled = Color(0xFF7A7578)
+        val ButtonSecondary = Color(0xFF00B5CC)
+        val ButtonSecondaryDisabled = Color(0xFF94A3B8)
 
-        val ButtonTertiary = Color(0xFF095751)
-        val ButtonTertiaryDisabled = Color(0xFF7A7578)
+        val ButtonTertiary = Color(0xFF00B5CC)
+        val ButtonTertiaryDisabled = Color(0xFF94A3B8)
 
-        val ButtonTogglePrimarySelected = Color(0xFF98A92A)
-        val ButtonTogglePrimarySelectedDisabled = Color(0xFFE7E6E6)
-        val ButtonTogglePrimarySelectedDisabledText = Color(0xFF7A7578)
-        val ButtonTogglePrimaryUnselected = Color(0xFF98A92A)
-        val ButtonTogglePrimaryUnselectedDisabled = Color(0xFF7A7578)
+        val ButtonTogglePrimarySelected = Color(0xFF00FF29)
+        val ButtonTogglePrimarySelectedDisabled = Color(0xFFE2E8F0)
+        val ButtonTogglePrimarySelectedDisabledText = Color(0xFF94A3B8)
+        val ButtonTogglePrimaryUnselected = Color(0xFF00FF29)
+        val ButtonTogglePrimaryUnselectedDisabled = Color(0xFF94A3B8)
 
-        val ButtonToggleSecondarySelected = Color(0xFF095751)
-        val ButtonToggleSecondarySelectedDisabled = Color(0xFFE7E6E6)
-        val ButtonToggleSecondarySelectedDisabledText = Color(0xFF7A7578)
-        val ButtonToggleSecondaryUnselected = Color(0xFF095751)
-        val ButtonToggleSecondaryUnselectedDisabled = Color(0xFF7A7578)
+        val ButtonToggleSecondarySelected = Color(0xFF00B5CC)
+        val ButtonToggleSecondarySelectedDisabled = Color(0xFFE2E8F0)
+        val ButtonToggleSecondarySelectedDisabledText = Color(0xFF94A3B8)
+        val ButtonToggleSecondaryUnselected = Color(0xFF00B5CC)
+        val ButtonToggleSecondaryUnselectedDisabled = Color(0xFF94A3B8)
     }
 }
 
@@ -36,58 +37,73 @@ object Color {
  * Colores representativos para el estado de los personajes (Alive, Dead, unknown).
  */
 object StatusColors {
-    val Alive = Color(0xFF55CC44)
-    val Dead = Color(0xFFD63D2E)
+    val Alive = Color(0xFF00E676)
+    val Dead = Color(0xFFFF5252)
     val Unknown = Color(0xFF9E9E9E)
 }
 
 /**
- * Colores base de marca pensados para negocios tipo cafetería.
+ * Colores de marca basados en el universo de Rick and Morty:
+ * verde neón portal (#00FF29), azul portal/Rick (#00B5CC) y acento dorado Morty (#F2C94C).
  */
 object BrandColors {
-    // Café tostado como color principal
-    val Primary = Color(0xFF795548) // brown 500
-    val OnPrimary = Color(0xFFFFFFFF)
+    // Verde neón portal (#00FF29) para acentos, detalles, lupa y bordes activos
+    val Primary = Color(0xFF00FF29)
+    val OnPrimary = Color(0xFF003806)
 
-    // Versión más clara para chips, botones elevados, etc.
-    val PrimaryContainer = Color(0xFFD7CCC8) // brown 200
-    val OnPrimaryContainer = Color(0xFF3E2723) // brown 900
+    // Contenedores primarios
+    val PrimaryContainer = Color(0xFFCEFAD1)
+    val OnPrimaryContainer = Color(0xFF003905)
+    val PrimaryContainerDark = Color(0xFF0D2E14)
+    val OnPrimaryContainerDark = Color(0xFF57FF73)
 
-    // Secundario: un verde suave tipo “matcha / planta” para detalles
-    val Secondary = Color(0xFF8BC34A) // light green 500
-    val OnSecondary = Color(0xFF1B2100)
-    val SecondaryContainer = Color(0xFFDCEDC8) // light green 200
-    val OnSecondaryContainer = Color(0xFF1B2100)
+    // Secundario: Azul portal / Rick's sci-fi cyan (#00B5CC)
+    val Secondary = Color(0xFF00B5CC)
+    val OnSecondary = Color(0xFFFFFFFF)
+    val SecondaryContainer = Color(0xFFC7F5FA)
+    val OnSecondaryContainer = Color(0xFF00363E)
+    val SecondaryContainerDark = Color(0xFF004F59)
+    val OnSecondaryContainerDark = Color(0xFF70E6F6)
 
-    // Terciario: un tono “caramelo” para acentos puntuales
-    val Tertiary = Color(0xFFFFA726) // orange 400
-    val OnTertiary = Color(0xFF3A1F00)
-    val TertiaryContainer = Color(0xFFFFE0B2) // orange 200
-    val OnTertiaryContainer = Color(0xFF3A1F00)
+    // Terciario: Amarillo Morty / Portal gold (#F2C94C)
+    val Tertiary = Color(0xFFF2C94C)
+    val OnTertiary = Color(0xFF382A00)
+    val TertiaryContainer = Color(0xFFFFEAA5)
+    val OnTertiaryContainer = Color(0xFF382A00)
+    val TertiaryContainerDark = Color(0xFF4E3C00)
+    val OnTertiaryContainerDark = Color(0xFFFFE27D)
 
     // Errores
-    val Error = Color(0xFFB3261E)
+    val Error = Color(0xFFFF5252)
     val OnError = Color(0xFFFFFFFF)
-    val ErrorContainer = Color(0xFFF9DEDC)
-    val OnErrorContainer = Color(0xFF410E0B)
+    val ErrorContainer = Color(0xFFFFDAD6)
+    val OnErrorContainer = Color(0xFF410002)
+    val ErrorContainerDark = Color(0xFF4B1113)
+    val OnErrorContainerDark = Color(0xFFFFB4AB)
 
-    // Neutrales
-    val NeutralVariant = Color(0xFF8D6E63)
+    // Neutrales / Outline
+    val OutlineLight = Color(0xFFCBD5E1)
+    val OutlineDark = Color(0xFF38404E)
+    val NeutralVariant = Color(0xFF64748B)
 }
 
 /**
- * Colores de fondo/superficie cálidos tipo “papel/factura de cafetería”.
+ * Colores de fondo y superficie inspirados en el diseño cósmico de Rick & Morty.
  */
 object SurfaceColors {
-    // Fondo claro tipo crema
-    val BackgroundLight = Color(0xFFFFF8E1) // amber 50
-    val SurfaceLight = Color(0xFFFFFBFE)
-    val OnBackgroundLight = Color(0xFF3E2723)
-    val OnSurfaceLight = Color(0xFF3E2723)
+    // Modo claro: gris moderno, fresco y limpio
+    val BackgroundLight = Color(0xFFF4F6F9)
+    val SurfaceLight = Color(0xFFFFFFFF)
+    val SurfaceVariantLight = Color(0xFFE8ECF2)
+    val OnBackgroundLight = Color(0xFF111827)
+    val OnSurfaceLight = Color(0xFF1A202C)
+    val OnSurfaceVariantLight = Color(0xFF5A6577)
 
-    // Modo oscuro: fondo café muy oscuro
-    val BackgroundDark = Color(0xFF12100F)
-    val SurfaceDark = Color(0xFF1C1B1F)
-    val OnBackgroundDark = Color(0xFFEDE0D4)
-    val OnSurfaceDark = Color(0xFFE6E1E5)
+    // Modo oscuro: gris pizarra cósmico (estilo web oficial Rick & Morty API #24282F)
+    val BackgroundDark = Color(0xFF14171C)
+    val SurfaceDark = Color(0xFF1E232B)
+    val SurfaceVariantDark = Color(0xFF272D37)
+    val OnBackgroundDark = Color(0xFFF0F3F6)
+    val OnSurfaceDark = Color(0xFFE6E9EE)
+    val OnSurfaceVariantDark = Color(0xFF9DA6B5)
 }
