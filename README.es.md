@@ -79,7 +79,7 @@ graph TD
 | :--- | :--- | :--- |
 | **`:domain`** | Lógica de negocio en **Kotlin 100% Puro**: modelos de dominio (`Character`), contratos de repositorios (`CharacterRepository`) y casos de uso aislados (`SearchCharactersUseCase`, `GetCharacterDetailUseCase`). Cero dependencias con Android o frameworks externos. | *Ninguna (0 dependencias)* |
 | **`:data`** | Obtención y persistencia de datos: API REST con Retrofit (`RickAndMortyApi`), fuente remota (`CharacterRemoteDataSource`), mapeo de DTOs y caché en memoria con TTL (`CharacterMemoryCache`). Los DTOs nunca escapan de `:data`. | `:domain` |
-| **`:core`** | Componentes reutilizables de UI (`Button`, `Text`, `ProgressButton`), tema del sistema de diseño (`RickAndMortyTheme`), abstracción de dispatchers (`DispatcherProvider`) y funciones de extensión comunes. | `:domain` |
+| **`:core`** | Componentes reutilizables de UI (`Button`, `Text`, `TextField`), tema del sistema de diseño (`RickAndMortyTheme`), abstracción de dispatchers (`DispatcherProvider`) y utilidades de UI. | `:domain` |
 | **`:feature:characters`** | Pantallas de búsqueda y detalle de personajes (`SearchScreen`, `DetailScreen`), ViewModels y contratos MVI. Los módulos de funcionalidad nunca dependen entre sí. | `:core`, `:domain` |
 | **`:di`** | Agregador centralizado de módulos de Koin (`appModules`) que reúne `coreModule`, `dataModule`, `domainModule` y `charactersFeatureModule`. | `:core`, `:domain`, `:data`, `:feature:characters` |
 | **`:app`** | Punto de entrada Android (`RickAndMortyApplication`), `MainActivity`, orquestación de navegación (`CharactersNavigation`) y variantes de compilación (`pre`, `pro`). | `:di`, `:core`, `:domain`, `:data`, `:feature:characters` |

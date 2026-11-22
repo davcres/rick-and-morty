@@ -7,10 +7,6 @@ object Color {
         val white = Color(0xFFFFFFFF)
     }
 
-    object Backgrounds {
-        val whiteBackground = Color(0xFFFFFFFF)
-    }
-
     object Button {
         val ButtonPrimary = Color(0xFF98A92A)
         val ButtonPrimaryDisabled = Color(0xFFE7E6E6)
@@ -76,7 +72,6 @@ object BrandColors {
     val OnErrorContainer = Color(0xFF410E0B)
 
     // Neutrales
-    val Neutral = Color(0xFF5D4037) // marrón neutro
     val NeutralVariant = Color(0xFF8D6E63)
 }
 

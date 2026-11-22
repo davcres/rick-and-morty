@@ -79,7 +79,7 @@ graph TD
 | :--- | :--- | :--- |
 | **`:domain`** | **100% Pure Kotlin** business logic: domain models (`Character`), repository interfaces (`CharacterRepository`), and isolated interactors (`SearchCharactersUseCase`, `GetCharacterDetailUseCase`). Zero Android and zero third-party framework dependencies. | *None (0 dependencies)* |
 | **`:data`** | Data retrieval and persistence: Retrofit REST API (`RickAndMortyApi`), remote data source (`CharacterRemoteDataSource`), DTO mapping, and in-memory TTL caching (`CharacterMemoryCache`). API DTOs never leak outside `:data`. | `:domain` |
-| **`:core`** | Reusable UI components (`Button`, `Text`, `ProgressButton`), design system theme (`RickAndMortyTheme`), coroutine dispatchers abstraction (`DispatcherProvider`), and common extension helpers. | `:domain` |
+| **`:core`** | Reusable UI components (`Button`, `Text`, `TextField`), design system theme (`RickAndMortyTheme`), coroutine dispatchers abstraction (`DispatcherProvider`), and UI helpers. | `:domain` |
 | **`:feature:characters`** | Character search and detail UI screens (`SearchScreen`, `DetailScreen`), ViewModels, and MVI contracts. Feature modules never depend on each other. | `:core`, `:domain` |
 | **`:di`** | Centralized Koin module aggregator (`appModules`) assembling `coreModule`, `dataModule`, `domainModule`, and `charactersFeatureModule`. | `:core`, `:domain`, `:data`, `:feature:characters` |
 | **`:app`** | Android application entry point (`RickAndMortyApplication`), `MainActivity`, navigation orchestration (`CharactersNavigation`), and build flavors (`pre`, `pro`). | `:di`, `:core`, `:domain`, `:data`, `:feature:characters` |
