@@ -2,11 +2,10 @@ package com.davcres.rickandmorty.feature.characters.search.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.davcres.rickandmorty.core.ui.Loader
 
 @Composable
 fun SearchLoadingView(modifier: Modifier = Modifier) {
@@ -14,6 +13,6 @@ fun SearchLoadingView(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        Loader()
     }
 }

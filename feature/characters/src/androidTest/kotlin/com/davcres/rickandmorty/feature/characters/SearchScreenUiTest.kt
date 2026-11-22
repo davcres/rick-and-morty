@@ -87,7 +87,9 @@ class SearchScreenUiTest {
             }
         }
 
-        composeTestRule.onNodeWithContentDescription("Clear search").performClick()
+        composeTestRule.onNodeWithContentDescription(
+            targetContext.getString(R.string.search_clear_description)
+        ).performClick()
         assertTrue(dispatchedIntent is SearchUiIntent.QueryChanged)
         assertEquals("", (dispatchedIntent as SearchUiIntent.QueryChanged).query)
     }
