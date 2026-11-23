@@ -7,28 +7,66 @@
 > [!NOTE]
 > Se requiere **JDK 21** para compilar y ejecutar este proyecto.
 
-Aplicación Android desarrollada como prueba técnica consumiendo la [API pública de Rick and Morty](https://rickandmortyapi.com/). Demuestra estándares de ingeniería de software para producción: **Clean Architecture**, arquitectura **multi-módulo Feature-by-Layer**, principios **SOLID**, patrón **MVI (Model-View-Intent)** con **Jetpack Compose**, cancelación reactiva de corrutinas, caché en memoria basada en consultas con TTL y reglas estáticas de arquitectura personalizadas.
+Aplicación Android desarrollada como prueba técnica consumiendo la [API pública de Rick and Morty](https://rickandmortyapi.com/). Resumen de la arquitectura y técnicas principales: **Clean Architecture**, arquitectura **multi-módulo Feature-by-Layer**, principios **SOLID**, patrón **MVI (Model-View-Intent)** con **Jetpack Compose**, sistema de caché jerárquico en dos niveles (L1 RAM + L2 Room) con soporte offline, cancelación reactiva de corrutinas en búsqueda, transiciones con elemento compartido y predictive back, telemetría de rendimiento y reglas estáticas de arquitectura personalizadas.
 
 ---
 
-## 🛠️ Stack Tecnológico y Librerías
+## 🌐 API Pública Elegida
 
-- **Lenguaje:** Kotlin 2.1.0, JVM 21, Coroutines & Flow
-- **UI y Presentación:** Jetpack Compose (BOM 2024.11.00), Material 3, Single Activity, Type-Safe Compose Navigation
-- **Arquitectura:** Clean Architecture + Multi-Módulo Feature-by-Layer + MVI (Flujo de datos unidireccional)
-- **Networking:** Retrofit 2.11.0, OkHttp 4.12.0, Kotlinx Serialization (`kotlinx.serialization.json` 1.7.3)
-- **Inyección de Dependencias:** Koin 4.0.0 (inyección basada en constructores con módulos desacoplados)
-- **Análisis Estático y Reglas de Arquitectura:** Detekt 1.23.7 con reglas personalizadas (`:detekt-architecture-rules`)
-- **Testing:** MockK, JUnit 5, Dispatchers de prueba de Kotlinx Coroutines
+Se seleccionó la **[Rick and Morty API](https://rickandmortyapi.com/)** (`https://rickandmortyapi.com/api/`):
+
+- **Endpoints consumidos:**
+  - `GET /character/?name={query}&page={page}`: Búsqueda reactiva de personajes con paginación.
+  - `GET /character/{id}`: Detalle completo de un personaje.
+- **Motivo de la elección:**
+  - **Sin autenticación requerida:** API REST pública, gratuita y de alta disponibilidad.
+  - **Modelo de datos amplio:** Entidades con información diversa (especie, estado, género, origen, localización, episodios y avatares).
+  - **Paginación estandarizada:** Metadatos de navegación (`pages`, `count`, `next`, `prev`).
+  - **Comportamiento realista en casos límite:** Responde con HTTP 404 cuando una búsqueda no arroja resultados, lo que permite demostrar un manejo de errores robusto y limpio sin propagar excepciones a la UI.
+
+> [!NOTE]
+> **Paginación y Rate Limiting (HTTP 429):** Con la paginación, el servicio a veces devuelve un error 429 y por eso se muestra el error al obtener los personajes al final de la lista. Al pulsar en reintentar y hacer la petición de nuevo suele responder bien.
+
+---
+
+## 🚀 Cómo Ejecutar la Aplicación
+
+### Requisitos Previos
+- **JDK 21** configurado en el entorno.
+- **Android Studio** (Ladybug / Meerkat o superior).
+- Dispositivo físico o emulador Android (API 29+ recomendado).
+
+### Build Flavors de Compilación
+El proyecto define la dimensión `env` con dos variantes:
+- **`pre` (Pre-producción):** TTL L1 = 2 minutos, TTL L2 = 1 hora.
+- **`pro` (Producción):** TTL L1 = 5 minutos, TTL L2 = 24 horas.
+
+### Comandos de Ejecución
+
+```bash
+# Compilar e instalar en dispositivo/emulador (variante pre o pro)
+./gradlew installPreDebug
+./gradlew installProDebug
+
+# Generar APKs de depuración
+./gradlew assemblePreDebug
+./gradlew assembleProDebug
+
+# Ejecutar todos los tests unitarios
+./gradlew testDebugUnitTest
+
+# Ejecutar análisis estático con Detekt y reglas personalizadas
+./gradlew detekt
+
+# Ejecutar la Quality Gate completa (compilación + tests + linter)
+./gradlew assembleDebug testDebugUnitTest detekt
+```
 
 ---
 
 ## 🏗️ Arquitectura y Modularización
 
-El proyecto implementa una arquitectura **Multi-Módulo Feature-by-Layer**.
-
-### Evolución Arquitectónica y Decisiones
-Originalmente concebido sobre una base que exploraba una micro-modularización extrema (más de 25 módulos separando datasources, repositorios y usecases en proyectos Gradle individuales), el proyecto fue refactorizado de forma pragmática hacia una estructura Clean Architecture multi-módulo limpia y equilibrada. Esta decisión eliminó el alto sobrecoste de sincronización y compilación de Gradle, manteniendo al 100% el aislamiento estricto entre capas, la testabilidad y el desacoplamiento de responsabilidades.
+El proyecto implementa una arquitectura **Clean Architecture Multi-Módulo Feature-by-Layer**.
 
 ### Diagrama de Dependencias
 
@@ -77,63 +115,55 @@ graph TD
 
 | Módulo | Responsabilidad | Dependencias |
 | :--- | :--- | :--- |
-| **`:domain`** | Lógica de negocio en **Kotlin 100% Puro**: modelos de dominio (`Character`), contratos de repositorios (`CharacterRepository`) y casos de uso aislados (`SearchCharactersUseCase`, `GetCharacterDetailUseCase`). Cero dependencias con Android o frameworks externos. | *Ninguna (0 dependencias)* |
-| **`:data`** | Obtención y persistencia de datos: API REST con Retrofit (`RickAndMortyApi`), fuente remota (`CharacterRemoteDataSource`), mapeo de DTOs y caché en memoria con TTL (`CharacterMemoryCache`). Los DTOs nunca escapan de `:data`. | `:domain` |
-| **`:core`** | Componentes reutilizables de UI (`Button`, `Text`, `TextField`), tema del sistema de diseño (`RickAndMortyTheme`), abstracción de dispatchers (`DispatcherProvider`) y utilidades de UI. | `:domain` |
-| **`:feature:characters`** | Pantallas de búsqueda y detalle de personajes (`SearchScreen`, `DetailScreen`), ViewModels y contratos MVI. Los módulos de funcionalidad nunca dependen entre sí. | `:core`, `:domain` |
-| **`:di`** | Agregador centralizado de módulos de Koin (`appModules`) que reúne `coreModule`, `dataModule`, `domainModule` y `charactersFeatureModule`. | `:core`, `:domain`, `:data`, `:feature:characters` |
-| **`:app`** | Punto de entrada Android (`RickAndMortyApplication`), `MainActivity`, orquestación de navegación (`CharactersNavigation`) y variantes de compilación (`pre`, `pro`). | `:di`, `:core`, `:domain`, `:data`, `:feature:characters` |
-| **`:detekt-architecture-rules`** | Plugin personalizado de Detekt que valida las fronteras arquitectónicas (ej. prohíbe imports de Android en `:domain` o referencias directas de UI a Data). | *Detekt API* |
+| **`:domain`** | **Kotlin 100% Puro**: modelos de dominio (`Character`, `PagedCharacters`), errores tipados (`AppError`), interfaces de repositorio (`CharacterRepository`) y casos de uso (`SearchCharactersUseCase`, `GetCharacterDetailUseCase`). Cero dependencias de Android o frameworks. | *Ninguna (0 dependencias)* |
+| **`:data`** | Red y persistencia local: cliente Retrofit (`RickAndMortyApi`), datasource remoto, base de datos relacional Room (`RickAndMortyDatabase`), datasource local, caché en memoria (`CharacterMemoryCache`) y mapeo de entidades. Los DTOs y entidades nunca escapan de `:data`. | `:domain` |
+| **`:core`** | Componentes compartidos de UI (`Button`, `Text`, `TextField`, `Loader`), tema del sistema de diseño (`RickAndMortyTheme`), abstracción de dispatchers (`DispatcherProvider`) y utilidades. | `:domain` |
+| **`:feature:characters`** | Pantallas (`SearchScreen`, `DetailScreen`), ViewModels MVI y navegación interna (`CharactersNavigation`). Aislado de otros features. | `:core`, `:domain` |
+| **`:di`** | Agregador centralizado de módulos de inyección de dependencias Koin (`appModules`). | `:core`, `:domain`, `:data`, `:feature:characters` |
+| **`:app`** | Entrada Android (`RickAndMortyApplication`), `MainActivity`, configuración de TTL por entorno (`AppConfigModule`) y variantes de compilación. | `:di`, `:core`, `:domain`, `:data`, `:feature:characters` |
+| **`:detekt-architecture-rules`** | Reglas personalizadas de Detekt que verifican las fronteras arquitectónicas (ej. prohíbe imports de Android en `:domain`). | *Detekt API* |
 
 ---
 
-## 🎯 Decisiones y Patrones Clave
+## 🎯 Decisiones Principales de Ingeniería
 
-### 1. MVI (Model-View-Intent) con Efectos Secundarios
-El estado de las pantallas sigue un flujo unidireccional estructurado a través de un `BaseViewModel<State, Intent, Effect>`:
-- **Estado (`UiState`):** Fuente única de verdad inmutable observada en Compose mediante `collectAsStateWithLifecycle()`.
-- **Intención (`UiIntent`):** Eventos de usuario (ej. `QueryChanged`, `CharacterClicked`, `Retry`) procesados por el ViewModel.
-- **Efecto (`UiEffect`):** Eventos de un solo uso (ej. `NavigateToDetail`, `ShowSnackbar`) transmitidos mediante Channels.
+### 1. Arquitectura y Flujo Unidireccional MVI
+Se utiliza un `BaseViewModel<State, Intent, Effect>` que asegura un flujo unidireccional estricto (UDF):
+- **`UiState`:** Estado inmutable único observado en Jetpack Compose mediante `collectAsStateWithLifecycle()`.
+- **`UiIntent`:** Eventos del usuario (`QueryChanged`, `CharacterClicked`, `LoadNextPage`, `Retry`).
+- **`UiEffect`:** Eventos de un solo uso (`NavigateToDetail`, `ShowSnackbar`) emitidos mediante Kotlin Coroutines `Channel`.
 
-### 2. Cancelación Activa de Corrutinas en Búsqueda
-Al teclear en la búsqueda de personajes, las corrutinas y peticiones previas aún en vuelo se cancelan inmediatamente, evitando condiciones de carrera (*race conditions*) y llamadas de red redundantes.
+### 2. Cancelación Activa de Corrutinas y Debounce en Búsqueda
+Al teclear en el buscador de personajes, se aplica un **debounce de 300 ms** junto con la cancelación inmediata de cualquier corrutina o petición de red previa que se encuentre en vuelo mediante su `Job`. Esto elimina por completo condiciones de carrera (*race conditions*) y llamadas redundantes a la API, optimizando el consumo de datos y batería.
 
-### 3. Sistema de Caché en Dos Niveles (L1 Memoria + L2 Disco con Room)
-Se implementa una estrategia jerárquica de caché (*Cache-Aside*):
-- **L1 (Memoria RAM):** `CharacterMemoryCache` con TTL configurable e inyectado mediante `CacheConfiguration` desde `:app` (**2 minutos en `pre`** y **5 minutos en `pro`**) para acceso inmediato (0ms I/O) durante la navegación y cambios de pantalla.
-- **L2 (Disco / Base de datos Room):** `RickAndMortyDatabase` con esquema relacional normalizado y TTL diferenciado por entorno inyectado mediante `CacheConfiguration` desde `:app` (**1 hora en `pre`** y **24 horas en `pro`**):
-  - `CharacterEntity`: almacena entidades de personajes únicos sin duplicación.
-  - `SearchPageEntity`: metadatos de paginación de la búsqueda (`totalPages`, `hasNextPage`, `updatedAt`).
-  - `SearchPageCharacterCrossRef`: tabla pivote que preserva el orden posicional exacto devuelto por la API remota.
-- **Resiliencia Offline:** Si el usuario se queda sin internet (modo avión o pérdida de cobertura), el repositorio recurre automáticamente a los datos almacenados en Room. Cualquier búsqueda realizada previamente (ej. "ri" o "rick") y los detalles de los personajes ya consultados seguirán siendo completamente navegables sin conexión. El tiempo está desacoplado mediante la interfaz `TimeProvider`.
-- **Desacoplamiento de Transacciones (`TransactionRunner`):** Las inserciones relacionales (personajes, página y relaciones) requieren operaciones atómicas (`withTransaction`). Para evitar acoplar el código a clases internas de Android y permitir tests unitarios puros en la JVM sin mocks estáticos frágiles de Room, las transacciones se abstraen mediante la interfaz `TransactionRunner` inyectada con Koin.
+### 3. Sistema de Caché en Dos Niveles (L1 Memoria + L2 Room) y Modo Offline
+Estrategia de Cache jerárquica:
+- **L1 (Memoria RAM - `CharacterMemoryCache`):** Acceso ultra-rápido (0ms I/O) durante la sesión y transiciones de pantalla con TTL inyectado vía `CacheConfiguration` (**2 min en `pre`**, **5 min en `pro`**). Almacena tanto páginas de búsqueda como detalles de personajes individuales.
+- **L2 (Disco / Room - `RickAndMortyDatabase`):** Base de datos relacional con esquema normalizado y TTL inyectado (**1 hora en `pre`**, **24 horas en `pro`**). Se compone de 3 entidades clave:
+  - `CharacterEntity`: Almacena la información normalizada y completa de cada personaje (id, nombre, estado, especie, tipo, género, origen, ubicación, imagen y episodios). Evita duplicidad de registros en disco.
+  - `SearchPageEntity`: Almacena los metadatos de paginación para una consulta y página concretas `(query, page)`: `totalPages`, `hasNextPage` y la marca temporal `updatedAt` para la expiración por TTL.
+  - `SearchPageCharacterCrossRef`: Tabla de correspondencia relacional (*join table* N:M) entre una página de búsqueda y sus personajes. Mantiene claves foráneas con borrado en cascada (`CASCADE`) y el campo `position` para preservar el orden exacto devuelto por la API.
+- **Resiliencia Offline:** Ante pérdida de conectividad o error de red, el repositorio recurre de forma transparente a los datos guardados en Room. Las búsquedas y personajes visitados previamente son totalmente navegables sin internet.
+- **Desacoplamiento de Transacciones (`TransactionRunner`):** Las inserciones atómicas en Room se encapsulan tras la interfaz `TransactionRunner`, permitiendo tests unitarios puros en la JVM sin necesidad de mocks estáticos complejos de Room.
+- **Testabilidad con `TimeProvider`:** La validación de expiración de TTL está desacoplada mediante `TimeProvider`.
 
-### 4. Manejo Resiliente de Errores de Red
-La API pública de Rick and Morty responde con un HTTP 404 y JSON `{"error": "There is nothing here"}` cuando una búsqueda no encuentra personajes. La implementación `CharacterRemoteDataSourceImpl` gestiona el HTTP 404 de forma limpia devolviendo una lista vacía en lugar de propagar excepciones inesperadas.
+### 4. Navegación con Elemento Compartido y Predictive Back
+- Implementado con **Jetpack Navigation 3** (`androidx.navigation3`).
+- Animación fluida de elemento compartido (`SharedTransitionLayout`) para el avatar del personaje entre el listado y la pantalla de detalle.
+- `predictivePopTransitionSpec` personalizado con transiciones simétricas para erradicar el encogimiento anómalo durante el gesto de volver hacia atrás nativo de Android.
 
----
-
-## 🚦 Controles de Calidad y Verificación
-
-El proyecto sigue estrictos controles de calidad previos a cualquier subida de código:
-
-```bash
-# Ejecutar compilación, pruebas unitarias y análisis estático de arquitectura
-./gradlew detekt assembleDebug testDebugUnitTest
-```
-
-### Git Hooks (Opcional)
-Para ejecutar las validaciones automáticamente antes de cada commit:
-
-```bash
-git config core.hooksPath .githooks
-chmod +x .githooks/*
-```
+### 5. Telemetría y Monitorización (Kotzilla SDK 3.0.1)
+Integración con Kotzilla SDK para monitorización del rendimiento, dependencias de Koin y salud de pantallas.
 
 ---
 
-## ⚙️ Monitorización de Rendimiento (Kotzilla)
-El proyecto incluye el SDK de Kotzilla para analíticas de Koin y seguimiento de rendimiento:
-1. Localiza `app/kotzilla.sample.json`.
-2. Crea una copia llamada `app/kotzilla.json` (ignorado en Git).
-3. Configura tus claves de API si deseas utilizarlo.
+## 🛠️ Stack Tecnológico y Librerías
+
+- **Lenguaje:** Kotlin 2.2.21, JVM 21, Coroutines & Flow
+- **UI:** Jetpack Compose (BOM 2025.08.01), Material 3, Navigation 3 (1.0.0)
+- **Persistencia Local:** Room 2.7.2 con KSP2
+- **Networking:** Retrofit 2.11.0, OkHttp 4.12.0, Kotlinx Serialization 1.7.3
+- **Inyección de Dependencias:** Koin 4.1.0
+- **Monitorización:** Kotzilla SDK 3.0.1
+- **Análisis Estático:** Detekt 1.23.4 con plugin propio de arquitectura
+- **Testing:** JUnit 5 (Jupiter 5.10.2) para tests unitarios, MockK 1.13.10, Turbine 1.1.0, Coroutines Test 1.8.1, JUnit 4 para tests instrumentados de UI (Compose UI Testing)
