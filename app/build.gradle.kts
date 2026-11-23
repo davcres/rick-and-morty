@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.davcres.template"
+    namespace = "com.davcres.rickandmorty"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.davcres.template"
+        applicationId = "com.davcres.rickandmorty"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -40,17 +40,21 @@ android {
             dimension = "env"
             applicationIdSuffix = ".pre"
             versionNameSuffix = "-pre"
-            resValue("string", "app_name", "TemplateApp (Pre)")
+            resValue("string", "app_name", "Rick & Morty (Pre)")
 
             buildConfigField("String", "API_BASE_URL", "\"https://api-pre.example.com\"")
             buildConfigField("Boolean", "IS_PRO", "false")
+            buildConfigField("long", "CACHE_L1_TTL_MINUTES", "2L")
+            buildConfigField("long", "CACHE_L2_TTL_HOURS", "1L")
         }
         create("pro") {
             dimension = "env"
-            resValue("string", "app_name", "TemplateApp")
+            resValue("string", "app_name", "Rick & Morty")
 
             buildConfigField("String", "API_BASE_URL", "\"https://api.example.com\"")
             buildConfigField("Boolean", "IS_PRO", "true")
+            buildConfigField("long", "CACHE_L1_TTL_MINUTES", "5L")
+            buildConfigField("long", "CACHE_L2_TTL_HOURS", "24L")
         }
     }
 
@@ -58,21 +62,22 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
-    }
     buildFeatures {
         compose = true
         buildConfig = true
     }
 }
 
+kotlin {
+    jvmToolchain(21)
+}
+
 dependencies {
-    implementation(projects.core.di)
-    implementation(projects.core.ui)
-    implementation(projects.core.common)
-    implementation(projects.appRoot.presentation.ui)
-    implementation(projects.appRoot.presentation.viewmodels)
+    implementation(projects.di)
+    implementation(projects.core)
+    implementation(projects.domain)
+    implementation(projects.data)
+    implementation(projects.feature.characters)
 
     // Koin
     implementation(libs.koin.android)

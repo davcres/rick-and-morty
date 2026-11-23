@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Search Screen -->
+    <string name="search_placeholder">Search characters…</string>
+    <string name="search_content_description">Search characters</string>
+    <string name="search_clear_description">Clear search</string>
+    <string name="search_initial_title">Search for Rick and Morty characters</string>
+    <string name="search_initial_subtitle">Type a name in the search bar above to begin exploring dimensions</string>
+    <string name="search_empty_title">No characters found</string>
+    <string name="search_empty_subtitle">We couldn\'t find any character matching \"%1$s\". Try another name or dimension!</string>
+    <string name="search_error_title">Wubba Lubba Dub Dub!</string>
+    <string name="search_error_fallback">Something went wrong while fetching characters.</string>
+    <string name="error_timeout_message">Damn it, Morty! The portal gun lost signal across dimensions. The server took too long to answer!</string>
+    <string name="error_network_message">Looks like the interdimensional cable is unplugged. Check your connection!</string>
+    <string name="action_retry">Retry</string>
+    <string name="pagination_retry">Retry loading more</string>
+    <string name="pagination_error_message">Could not load more characters.</string>
+    <string name="character_avatar_content_description">Avatar of %1$s</string>
+    <string name="character_last_known_location">Last known location: %1$s</string>
+    <string name="character_status_dot_description">Status indicator</string>
+
+    <!-- Detail Screen -->
+    <string name="detail_title">Character Details</string>
+    <string name="detail_loading">Loading character details…</string>
+    <string name="detail_error_title">Wubba Lubba Dub Dub!</string>
+    <string name="detail_error_fallback">Could not load character details.</string>
+    <string name="detail_section_info">Information</string>
+    <string name="detail_label_gender">Gender</string>
+    <string name="detail_label_species">Species</string>
+    <string name="detail_label_status">Status</string>
+    <string name="detail_label_origin">Origin</string>
+    <string name="detail_label_location">Last Known Location</string>
+    <string name="detail_label_type">Type</string>
+    <string name="detail_label_episodes">Episodes</string>
+    <string name="detail_episodes_count">%1$d episode(s)</string>
+    <string name="action_back">Back to Search</string>
+    <string name="nav_back_content_description">Navigate back</string>
+</resources>
