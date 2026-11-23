@@ -6,7 +6,6 @@ activityCompose = "1.12.0-alpha08"
 agp = "8.10.1"
 composeBom = "2025.08.01"
 coroutines = "1.8.1"
-datastore = "1.1.1"
 detekt = "1.23.4"
 junit = "4.13.2"
 junitJupiter = "5.10.2"
@@ -21,9 +20,6 @@ navigation3-viewmodel = "2.10.0"
 serialization = "1.9.0"
 turbine = "1.1.0"
 version-catalog-update = "1.0.0"
-espressoCore = "3.7.0"
-appcompat = "1.7.1"
-material = "1.13.0"
 okhttp = "4.12.0"
 retrofit = "2.11.0"
 kotlinxSerializationJson = "1.7.3"
@@ -36,15 +32,10 @@ activity-compose = { group = "androidx.activity", name = "activity-compose", ver
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" } # Bill of Materials to align versions across all Compose libraries.
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }           # Jetpack Compose Material 3 components (M3 design system).
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" } # Coroutines and Flow
-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" } # DataStore.
-datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" } # DataStore (core, no Android dependencies).
 detekt-api = { module = "io.gitlab.arturbosch.detekt:detekt-api", version.ref = "detekt" }          # To apply custom rules.
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" } # Provides a set of formatting rules for Detekt (wrapping ktlint).
 junit = { group = "junit", name = "junit", version.ref = "junit" }                                  # Classic JUnit 4 for JVM unit testing.
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
-junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junitJupiter" }
-junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junitJupiter" }
-junit-jupiter-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junitJupiter" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
